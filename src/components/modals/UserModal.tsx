@@ -1,0 +1,202 @@
+import { useState, useEffect } from 'react';
+import Modal from './Modal';
+import { useUserStore, User } from '../../stores/userStore';
+import { useLocationStore } from '../../stores/locationStore';
+import { useTeamStore } from '../../stores/teamStore';
+
+interface UserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: User | null;
+}
+
+const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
+  const { addUser, updateUser } = useUserStore();
+  const { locations, fetchLocations } = useLocationStore();
+  const { teams, fetchTeams } = useTeamStore();
+
+  const [formData, setFormData] = useState<Omit<User, 'id'> & { password: string }>({
+    displayName: '',
+    email: '',
+    phoneNumber: '',
+    password: '',
+    role: 'relationship_mgr',
+    status: 'Active',
+    location_id: '',
+    team_id: '',
+  });
+
+  useEffect(() => {
+    fetchLocations();
+    fetchTeams();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        displayName: user.displayName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        password: '',
+        role: user.role,
+        status: user.status,
+        location_id: user.location_id || '',
+        team_id: user.team_id || '',
+      });
+    } else {
+      setFormData({
+        displayName: '',
+        email: '',
+        phoneNumber: '',
+        password: '',
+        role: 'relationship_mgr',
+        status: 'Active',
+        location_id: '',
+        team_id: '',
+      });
+    }
+  }, [user]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (user) {
+      await updateUser(user.id, formData);
+    } else {
+      await addUser(formData);
+    }
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={user ? 'Edit User' : 'Add User'}>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label className="form-label">Full Name</label>
+          <input
+            type="text"
+            name="displayName"
+            className="form-input"
+            value={formData.displayName}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Email</label>
+          <input
+            type="email"
+            name="email"
+            className="form-input"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Phone</label>
+          <input
+            type="text"
+            name="phoneNumber"
+            className="form-input"
+            value={formData.phoneNumber}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Role</label>
+          <select
+            name="role"
+            className="form-input"
+            value={formData.role}
+            onChange={handleChange}
+          >
+            <option value="super_admin">Super Admin</option>
+            <option value="admin">Admin</option>
+            <option value="team_leader">Team Leader</option>
+            <option value="relationship_mgr">Relationship Manager</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Status</label>
+          <select
+            name="status"
+            className="form-input"
+            value={formData.status}
+            onChange={handleChange}
+          >
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">{user ? 'New Password (optional)' : 'Password'}</label>
+          <input
+            type="password"
+            name="password"
+            className="form-input"
+            value={formData.password}
+            onChange={handleChange}
+            required={!user}
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Location</label>
+          <select
+            name="location_id"
+            className="form-input"
+            value={formData.location_id}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Location</option>
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Team</label>
+          <select
+            name="team_id"
+            className="form-input"
+            value={formData.team_id}
+            onChange={handleChange}
+          >
+            <option value="">Select Team</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex justify-end space-x-3 mt-6">
+          <button type="button" className="btn-secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn btn-primary">
+            {user ? 'Update User' : 'Add User'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
+export default UserModal;

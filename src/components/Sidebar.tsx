@@ -1,0 +1,111 @@
+import { NavLink } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Users,
+  Target,
+  Users2,
+  UserPlus,
+  LogOut,
+  Trophy
+} from 'lucide-react'; // ✅ Trophy icon added
+import { useAuthStore } from '../stores/authStore';
+
+function Sidebar() {
+  const { role, logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  const menuItems = [
+    {
+      label: 'Dashboard',
+      path: '/',
+      icon: <LayoutDashboard size={18} className="mr-2" />,
+      roles: ['super_admin'],
+    },
+    {
+      label: 'Users',
+      path: '/users',
+      icon: <Users size={18} className="mr-2" />,
+      roles: ['super_admin'],
+    },
+    {
+      label: 'Leads',
+      path: '/leads',
+      icon: <Target size={18} className="mr-2" />,
+      roles: ['super_admin', 'admin', 'team_leader', 'relationship_mgr'],
+    },
+    {
+      label: 'Teams',
+      path: '/teams',
+      icon: <Users2 size={18} className="mr-2" />,
+      roles: ['super_admin', 'admin'],
+    },
+    {
+      label: 'Assign Team',
+      path: '/assign-team',
+      icon: <UserPlus size={18} className="mr-2" />,
+      roles: ['super_admin'],
+    },
+    {
+      label: 'Clients',
+      path: '/clients',
+      icon: <Trophy size={18} className="mr-2" />,
+      roles: ['super_admin', 'admin', 'team_leader', 'relationship_mgr'], // ✅ visible to all
+    },
+  ];
+
+  return (
+    <aside className="w-64 bg-gray-900 min-h-screen flex flex-col border-r border-gray-800">
+      <div className="p-4 border-b border-gray-800">
+        <h1 className="text-2xl font-bold text-white">StockVista</h1>
+      </div>
+      <nav className="flex-1">
+        <ul>
+          {menuItems
+            .filter((item) => item.roles.includes(role))
+            .map((item) => (
+              <li key={item.path}>
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `sidebar-link flex items-center ${
+                      isActive ? 'sidebar-link-active' : ''
+                    }`
+                  }
+                >
+                  {item.icon}
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+        </ul>
+      </nav>
+
+      <div className="p-4 border-t border-gray-800">
+        <button
+          onClick={handleLogout}
+          className="btn btn-primary w-full flex items-center justify-center"
+        >
+          <LogOut size={18} className="mr-2" />
+          Logout
+        </button>
+      </div>
+
+      <div className="p-4 border-t border-gray-800 flex items-center">
+        <div className="w-10 h-10 rounded-full bg-gray-700 mr-3 overflow-hidden">
+          <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white">
+            {role?.charAt(0).toUpperCase() || 'U'}
+          </div>
+        </div>
+        <div>
+          <p className="font-medium capitalize">{role.replace('_', ' ') || '[Role]'}</p>
+          <p className="text-sm text-gray-400">{role}</p>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+export default Sidebar;
