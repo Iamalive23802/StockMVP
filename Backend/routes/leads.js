@@ -7,7 +7,8 @@ const {
   updateLead,
   deleteLead,
   uploadLeads,
-  assignLead // ✅ added here
+  assignLead,
+  googleSheetsUpload // ✅ added this!
 } = require('../controllers/leads');
 
 // Routes
@@ -16,8 +17,7 @@ router.post('/', addLead);
 router.put('/:id', updateLead);
 router.delete('/:id', deleteLead);
 router.post('/upload', uploadLeads);
-
-// ✅ NEW route for assigning leads
 router.patch('/:id/assign', assignLead);
+router.post('/google-sheets', googleSheetsUpload); // ✅ this line
 
 module.exports = router;

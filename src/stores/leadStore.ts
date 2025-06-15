@@ -1,138 +1,85 @@
 import { create } from 'zustand';
-import { useAuthStore } from './authStore';
+import axios from 'axios';
 
 export interface Lead {
   id: string;
   fullName: string;
+  phone: string;
   email: string;
-  phone?: string;
-  notes?: string;
+  notes: string;
   status: 'New' | 'Contacted' | 'Qualified' | 'Proposal' | 'Won' | 'Lost';
   team_id: string;
   assigned_to?: string;
 }
 
-interface LeadState {
+interface LeadStore {
   leads: Lead[];
   loading: boolean;
-  error: string | null;
   fetchLeads: () => Promise<void>;
   addLead: (lead: Omit<Lead, 'id'>) => Promise<void>;
-  updateLead: (id: string, updatedLead: Partial<Lead>) => Promise<void>;
+  updateLead: (id: string, lead: Omit<Lead, 'id'>) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
   uploadLeads: (file: File) => Promise<void>;
-  getLeadCount: () => number;
-  getConversionRate: () => number;
 }
 
-export const useLeadStore = create<LeadState>((set, get) => ({
+export const useLeadStore = create<LeadStore>((set) => ({
   leads: [],
   loading: false,
-  error: null,
 
   fetchLeads: async () => {
-    set({ loading: true, error: null });
-
+    set({ loading: true });
     try {
-      const { role, userId } = useAuthStore.getState();
-
-      const url =
-        role === 'relationship_mgr' || role === 'admin'
-          ? `http://localhost:5050/api/leads?role=${role}&user_id=${userId}`
-          : 'http://localhost:5050/api/leads';
-
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch leads');
-
-      const raw = await response.json();
-
-      const data: Lead[] = raw.map((lead: any) => ({
-        id: lead.id,
-        fullName: lead.full_name ?? lead.fullName ?? '[No Name]',
-        email: lead.email,
-        phone: lead.phone_number ?? lead.phone,
-        notes: lead.notes,
-        status: lead.status,
-        team_id: lead.team_id ?? '',
-        assigned_to: lead.assigned_to ?? '',
+      const { data } = await axios.get('/api/leads');
+      const mapped = data.map((lead: any) => ({
+        ...lead,
+        fullName: lead.full_name, // ✅ map to camelCase
       }));
-
-      set({ leads: data, loading: false });
-    } catch (err: any) {
-      set({ loading: false, error: err.message });
+      set({ leads: mapped });
+    } catch (err) {
+      console.error('Failed to fetch leads:', err);
+    } finally {
+      set({ loading: false });
     }
   },
 
   addLead: async (lead) => {
-    const leadWithDefaults: Omit<Lead, 'id'> = {
-      ...lead,
-      status: lead.status || 'New',
-    };
-
     try {
-      const res = await fetch('http://localhost:5050/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(leadWithDefaults),
-      });
-
-      if (!res.ok) throw new Error('Failed to add lead');
-      await get().fetchLeads();
+      await axios.post('/api/leads', lead);
+      await useLeadStore.getState().fetchLeads();
     } catch (err) {
-      console.error('❌ addLead failed:', err);
+      console.error('Failed to add lead:', err);
     }
   },
 
-  updateLead: async (id, updatedLead) => {
+  updateLead: async (id, lead) => {
     try {
-      const res = await fetch(`http://localhost:5050/api/leads/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedLead),
-      });
-
-      if (!res.ok) throw new Error('Failed to update lead');
-      await get().fetchLeads();
+      await axios.put(`/api/leads/${id}`, lead);
+      await useLeadStore.getState().fetchLeads();
     } catch (err) {
-      console.error('❌ updateLead failed:', err);
+      console.error('Failed to update lead:', err);
     }
   },
 
   deleteLead: async (id) => {
     try {
-      const res = await fetch(`http://localhost:5050/api/leads/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!res.ok) throw new Error('Failed to delete lead');
-      await get().fetchLeads();
+      await axios.delete(`/api/leads/${id}`);
+      await useLeadStore.getState().fetchLeads();
     } catch (err) {
-      console.error('❌ deleteLead failed:', err);
+      console.error('Failed to delete lead:', err);
     }
   },
 
-  uploadLeads: async (file: File) => {
+  uploadLeads: async (file) => {
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      const res = await fetch('http://localhost:5050/api/leads/upload', {
-        method: 'POST',
-        body: formData,
+      await axios.post('/api/leads/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      if (!res.ok) throw new Error('CSV upload failed');
-      await get().fetchLeads();
+      await useLeadStore.getState().fetchLeads();
     } catch (err) {
-      console.error('❌ uploadLeads failed:', err);
+      console.error('Failed to upload leads:', err);
     }
-  },
-
-  getLeadCount: () => get().leads.length,
-
-  getConversionRate: () => {
-    const leads = get().leads;
-    const won = leads.filter((l) => l.status === 'Won').length;
-    return leads.length ? Math.round((won / leads.length) * 100) : 0;
   },
 }));

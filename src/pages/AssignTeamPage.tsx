@@ -28,7 +28,6 @@ function AssignTeamPage() {
         password: user.password || '',
         role: user.role,
         status: user.status,
-        location_id: user.location_id,
         team_id: selectedTeam,
       });
     }

@@ -3,9 +3,8 @@ const pool = require('../db');
 const getAllUsers = async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT u.*, l.name AS location_name, t.name AS team_name
+      SELECT u.*, t.name AS team_name
       FROM users u
-      LEFT JOIN locations l ON u.location_id = l.id
       LEFT JOIN teams t ON u.team_id = t.id
       ORDER BY u.display_name
     `);
@@ -23,17 +22,16 @@ const addUser = async (req, res) => {
     password,
     role,
     status,
-    location_id,
     team_id
   } = req.body;
 
   try {
     const result = await pool.query(
       `INSERT INTO users 
-        (display_name, email, phone_number, password, role, status, location_id, team_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (display_name, email, phone_number, password, role, status, team_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [displayName, email, phoneNumber, password, role, status, location_id, team_id]
+      [displayName, email, phoneNumber, password, role, status, team_id]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -50,7 +48,6 @@ const updateUser = async (req, res) => {
     password,
     role,
     status,
-    location_id,
     team_id
   } = req.body;
 
@@ -63,10 +60,9 @@ const updateUser = async (req, res) => {
         password = $4,
         role = $5,
         status = $6,
-        location_id = $7,
-        team_id = $8
-       WHERE id = $9 RETURNING *`,
-      [displayName, email, phoneNumber, password, role, status, location_id, team_id, id]
+        team_id = $7
+       WHERE id = $8 RETURNING *`,
+      [displayName, email, phoneNumber, password, role, status, team_id, id]
     );
     res.json(result.rows[0]);
   } catch (err) {

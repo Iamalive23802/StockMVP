@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useLeadStore } from '../../stores/leadStore';
 import { useTeamStore } from '../../stores/teamStore';
+import { useUserStore } from '../../stores/userStore';
+import { useAuthStore } from '../../stores/authStore';
 import type { Lead } from '../../stores/leadStore';
 
 interface LeadModalProps {
@@ -11,8 +13,10 @@ interface LeadModalProps {
 }
 
 const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
-  const { addLead, updateLead } = useLeadStore();
-  const { teams, fetchTeams } = useTeamStore();
+  const { addLead, updateLead, leads } = useLeadStore();
+  const { fetchTeams } = useTeamStore();
+  const { users, fetchUsers } = useUserStore();
+  const { role, userId } = useAuthStore();
 
   const [formData, setFormData] = useState<Omit<Lead, 'id'>>({
     fullName: '',
@@ -25,6 +29,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
 
   useEffect(() => {
     fetchTeams();
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -59,10 +64,26 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const finalData = {
+    if (!lead && formData.phone && leads.some(l => l.phone === formData.phone)) {
+      alert('A lead with this phone number already exists!');
+      return;
+    }
+
+    let finalData = {
       ...formData,
       status: formData.status as Lead['status'],
     };
+
+    if (role === 'relationship_mgr') {
+      const user = users.find(u => u.id === userId);
+      if (user) {
+        finalData = {
+          ...finalData,
+          team_id: user.team_id || '',
+          assigned_to: userId,
+        };
+      }
+    }
 
     if (lead) {
       await updateLead(lead.id, finalData);
@@ -136,24 +157,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             <option value="Proposal">Proposal</option>
             <option value="Won">Won</option>
             <option value="Lost">Lost</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Assign to Team</label>
-          <select
-            name="team_id"
-            className="form-input"
-            value={formData.team_id}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select a Team</option>
-            {teams.map(team => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
-            ))}
           </select>
         </div>
 

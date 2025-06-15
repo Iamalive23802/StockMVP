@@ -7,7 +7,7 @@ import {
   UserPlus,
   LogOut,
   Trophy
-} from 'lucide-react'; // ✅ Trophy icon added
+} from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
 function Sidebar() {
@@ -22,13 +22,13 @@ function Sidebar() {
       label: 'Dashboard',
       path: '/',
       icon: <LayoutDashboard size={18} className="mr-2" />,
-      roles: ['super_admin'],
+      roles: ['super_admin', 'admin'],
     },
     {
       label: 'Users',
       path: '/users',
       icon: <Users size={18} className="mr-2" />,
-      roles: ['super_admin'],
+      roles: ['super_admin', 'admin', 'team_leader'],
     },
     {
       label: 'Leads',
@@ -42,17 +42,18 @@ function Sidebar() {
       icon: <Users2 size={18} className="mr-2" />,
       roles: ['super_admin', 'admin'],
     },
-    {
+    /*{
       label: 'Assign Team',
       path: '/assign-team',
       icon: <UserPlus size={18} className="mr-2" />,
       roles: ['super_admin'],
     },
+    */
     {
       label: 'Clients',
       path: '/clients',
       icon: <Trophy size={18} className="mr-2" />,
-      roles: ['super_admin', 'admin', 'team_leader', 'relationship_mgr'], // ✅ visible to all
+      roles: ['super_admin', 'admin', 'team_leader', 'relationship_mgr'],
     },
   ];
 
@@ -61,6 +62,7 @@ function Sidebar() {
       <div className="p-4 border-b border-gray-800">
         <h1 className="text-2xl font-bold text-white">StockVista</h1>
       </div>
+
       <nav className="flex-1">
         <ul>
           {menuItems

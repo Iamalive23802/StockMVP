@@ -12,7 +12,7 @@ function TeamsPage() {
 
   useEffect(() => {
     fetchTeams();
-    fetchUsers(); // ✅ fetch users to count team members
+    fetchUsers(); 
   }, []);
 
   const handleAddTeam = () => {
@@ -54,26 +54,18 @@ function TeamsPage() {
           <table className="data-table">
             <thead className="bg-gray-700">
               <tr>
-                <th className="w-10">
-                  <input type="checkbox" className="rounded bg-gray-800 border-gray-600" />
-                </th>
                 <th>Team Name</th>
-                <th>Location</th>
-                <th>Users</th> {/* ✅ new column */}
+                <th>Users</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
               {teams.map((team) => {
-                const userCount = users.filter(u => u.team_id === team.id).length;
+                const userCount = users.filter((u) => u.team_id === team.id).length;
                 return (
                   <tr key={team.id}>
-                    <td>
-                      <input type="checkbox" className="rounded bg-gray-800 border-gray-600" />
-                    </td>
                     <td>{team.name}</td>
-                    <td>{team.location_name || '—'}</td>
-                    <td>{userCount}</td> {/* ✅ new value */}
+                    <td>{userCount}</td>
                     <td>
                       <div className="flex space-x-2">
                         <button

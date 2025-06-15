@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Ensure this is available if needed
 
 function LoginPage() {
   const [email, setEmail] = useState('');

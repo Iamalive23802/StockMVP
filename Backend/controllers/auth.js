@@ -25,8 +25,7 @@ const loginUser = async (req, res) => {
         displayName: user.display_name,
         role: user.role,
         status: user.status,
-        team_id: user.team_id,
-        location_id: user.location_id,
+        team_id: user.team_id
       },
     });
   } catch (err) {

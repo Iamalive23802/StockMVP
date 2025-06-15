@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useUserStore, User } from '../../stores/userStore';
-import { useLocationStore } from '../../stores/locationStore';
 import { useTeamStore } from '../../stores/teamStore';
 
 interface UserModalProps {
@@ -12,7 +11,6 @@ interface UserModalProps {
 
 const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
   const { addUser, updateUser } = useUserStore();
-  const { locations, fetchLocations } = useLocationStore();
   const { teams, fetchTeams } = useTeamStore();
 
   const [formData, setFormData] = useState<Omit<User, 'id'> & { password: string }>({
@@ -22,12 +20,10 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
     password: '',
     role: 'relationship_mgr',
     status: 'Active',
-    location_id: '',
     team_id: '',
   });
 
   useEffect(() => {
-    fetchLocations();
     fetchTeams();
   }, []);
 
@@ -40,7 +36,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
         password: '',
         role: user.role,
         status: user.status,
-        location_id: user.location_id || '',
         team_id: user.team_id || '',
       });
     } else {
@@ -51,7 +46,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
         password: '',
         role: 'relationship_mgr',
         status: 'Active',
-        location_id: '',
         team_id: '',
       });
     }
@@ -149,24 +143,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
             onChange={handleChange}
             required={!user}
           />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Location</label>
-          <select
-            name="location_id"
-            className="form-input"
-            value={formData.location_id}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Location</option>
-            {locations.map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.name}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div className="form-group">

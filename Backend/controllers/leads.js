@@ -2,7 +2,11 @@ const pool = require('../db');
 const multer = require('multer');
 const Papa = require('papaparse');
 
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
 const upload = multer({ storage: multer.memoryStorage() });
+
+const normalizePhone = (p) => (p || '').replace(/\D/g, '').trim();
 
 const getLeads = async (req, res) => {
   const { role, user_id } = req.query;
@@ -12,37 +16,27 @@ const getLeads = async (req, res) => {
 
     if (role === 'relationship_mgr') {
       result = await pool.query(
-        `SELECT l.*, loc.name AS location_name
+        `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role
          FROM leads l
-         LEFT JOIN locations loc ON l.location_id = loc.id
+         LEFT JOIN users u ON l.assigned_to = u.id
          WHERE l.assigned_to = $1
-         ORDER BY l.created_at DESC`,
+         ORDER BY l.date DESC`,
         [user_id]
       );
     } else if (role === 'admin') {
-      const locationResult = await pool.query(
-        `SELECT location_id FROM users WHERE id = $1`,
-        [user_id]
-      );
-      const location_id = locationResult.rows[0]?.location_id;
-
       result = await pool.query(
-        `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role, loc.name AS location_name
+        `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role
          FROM leads l
          LEFT JOIN users u ON l.assigned_to = u.id
-         LEFT JOIN locations loc ON l.location_id = loc.id
-         WHERE l.location_id = $1
-         ORDER BY l.created_at DESC`,
-        [location_id]
+         WHERE u.role = 'relationship_mgr'
+         ORDER BY l.date DESC`
       );
     } else {
-      // super_admin and others
       result = await pool.query(
-        `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role, loc.name AS location_name
+        `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role
          FROM leads l
          LEFT JOIN users u ON l.assigned_to = u.id
-         LEFT JOIN locations loc ON l.location_id = loc.id
-         ORDER BY l.created_at DESC`
+         ORDER BY l.date DESC`
       );
     }
 
@@ -54,18 +48,40 @@ const getLeads = async (req, res) => {
 };
 
 const addLead = async (req, res) => {
-  const { fullName, email, phone, notes, location_id } = req.body;
+  const { fullName, email, phone, notes, team_id } = req.body;
+  const { role, user_id } = req.query;
 
-  if (!fullName || !email) {
-    return res.status(400).json({ error: 'Full name and email are required' });
+  if (!fullName || !email || !phone) {
+    return res.status(400).json({ error: 'Full name, email, and phone are required' });
   }
 
+  const phoneNorm = normalizePhone(phone);
+
   try {
+    const existing = await pool.query('SELECT id FROM leads WHERE phone = $1', [phoneNorm]);
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Lead with this phone number already exists' });
+    }
+
+    let assignedTo = null;
+    let finalTeamId = team_id;
+
+    if (role === 'relationship_mgr') {
+      assignedTo = user_id;
+      if (!finalTeamId) {
+        const rm = await pool.query('SELECT team_id FROM users WHERE id = $1', [user_id]);
+        finalTeamId = rm.rows[0]?.team_id || null;
+      }
+    }
+
+    const safeTeamId = finalTeamId && finalTeamId.trim() !== '' ? finalTeamId : null;
+    const safeAssignedTo = assignedTo && assignedTo.trim() !== '' ? assignedTo : null;
+
     const result = await pool.query(
-      `INSERT INTO leads (full_name, email, phone, notes, status, location_id)
-       VALUES ($1, $2, $3, $4, 'New', $5)
+      `INSERT INTO leads (full_name, email, phone, notes, team_id, assigned_to)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [fullName, email, phone || null, notes || '', location_id || null]
+      [fullName, email, phoneNorm, notes || '', safeTeamId, safeAssignedTo]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -76,28 +92,24 @@ const addLead = async (req, res) => {
 
 const updateLead = async (req, res) => {
   const { id } = req.params;
-  const {
-    fullName,
-    email,
-    phone,
-    notes,
-    status,
-    team_id,
-    assigned_to,
-    location_id
-  } = req.body;
+  const { fullName, email, phone, notes, status, team_id, assigned_to } = req.body;
 
-  if (!fullName || !email || !status) {
+  if (!fullName || !email || !phone || !status) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
+
+  const phoneNorm = normalizePhone(phone);
+
+  const safeTeamId = team_id && team_id.trim() !== '' ? team_id : null;
+  const safeAssignedTo = assigned_to && assigned_to.trim() !== '' ? assigned_to : null;
 
   try {
     const result = await pool.query(
       `UPDATE leads
        SET full_name = $1, email = $2, phone = $3, notes = $4, status = $5,
-           team_id = $6, assigned_to = $7, location_id = $8
-       WHERE id = $9 RETURNING *`,
-      [fullName, email, phone || null, notes || '', status, team_id || null, assigned_to || null, location_id || null, id]
+           team_id = $6, assigned_to = $7
+       WHERE id = $8 RETURNING *`,
+      [fullName, email, phoneNorm, notes || '', status, safeTeamId, safeAssignedTo, id]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -161,26 +173,34 @@ const uploadLeads = [
 
     const client = await pool.connect();
     try {
+      const existingPhonesRes = await client.query('SELECT phone FROM leads');
+      const existingPhones = new Set(existingPhonesRes.rows.map(r => normalizePhone(r.phone)));
+      const sheetPhones = new Set();
+
       await client.query('BEGIN');
       for (const row of data) {
-        const {
-          fullName,
-          email,
-          phone,
-          notes,
-          location_id
-        } = row;
+        const fullName = row['Full Name'] || row.fullName || '';
+        const email = row['Email'] || row.email || '';
+        const phone = normalizePhone(row['Phone'] || row.phone || '');
+        const notes = row['Notes'] || row.notes || '';
+        const team_id = row['Team ID'] || row.team_id || null;
 
-        if (!fullName || !email) continue;
+        const safeTeamId = team_id && team_id.trim() !== '' ? team_id : null;
+
+        if (!fullName || !email || !phone) continue;
+        if (existingPhones.has(phone)) continue;
+        if (sheetPhones.has(phone)) continue;
 
         await client.query(
-          `INSERT INTO leads (full_name, email, phone, notes, status, location_id)
-           VALUES ($1, $2, $3, $4, 'New', $5)`,
-          [fullName, email, phone || null, notes || '', location_id || null]
+          `INSERT INTO leads (full_name, email, phone, notes, team_id)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [fullName, email, phone, notes, safeTeamId]
         );
+
+        sheetPhones.add(phone);
       }
       await client.query('COMMIT');
-      res.status(201).json({ message: 'Leads uploaded successfully' });
+      res.status(201).json({ message: 'Leads uploaded successfully (duplicates skipped)' });
     } catch (err) {
       await client.query('ROLLBACK');
       console.error('❌ Failed to upload leads:', err.message);
@@ -191,11 +211,82 @@ const uploadLeads = [
   }
 ];
 
+const googleSheetsUpload = async (req, res) => {
+  const { sheetLink } = req.body;
+
+  if (!sheetLink || !sheetLink.includes('docs.google.com/spreadsheets')) {
+    return res.status(400).json({ error: 'Invalid Google Sheets link' });
+  }
+
+  try {
+    const match = sheetLink.match(/\/d\/(.*?)\//);
+    if (!match) {
+      return res.status(400).json({ error: 'Could not parse Google Sheets link' });
+    }
+
+    const sheetId = match[1];
+    const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+
+    const response = await fetch(exportUrl);
+    if (!response.ok) {
+      throw new Error('Failed to fetch data from Google Sheets');
+    }
+
+    const csvData = await response.text();
+    const { data } = Papa.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+    });
+
+    const client = await pool.connect();
+    try {
+      const existingPhonesRes = await client.query('SELECT phone FROM leads');
+      const existingPhones = new Set(existingPhonesRes.rows.map(r => normalizePhone(r.phone)));
+      const sheetPhones = new Set();
+
+      await client.query('BEGIN');
+      for (const row of data) {
+        const fullName = row['Full Name'] || row.fullName || '';
+        const email = row['Email'] || row.email || '';
+        const phone = normalizePhone(row['Phone'] || row.phone || '');
+        const notes = row['Notes'] || row.notes || '';
+        const team_id = row['Team ID'] || row.team_id || null;
+
+        const safeTeamId = team_id && team_id.trim() !== '' ? team_id : null;
+
+        if (!fullName || !email || !phone) continue;
+        if (existingPhones.has(phone)) continue;
+        if (sheetPhones.has(phone)) continue;
+
+        await client.query(
+          `INSERT INTO leads (full_name, email, phone, notes, team_id)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [fullName, email, phone, notes, safeTeamId]
+        );
+
+        sheetPhones.add(phone);
+      }
+      await client.query('COMMIT');
+      res.status(201).json({ message: 'Leads uploaded successfully (duplicates skipped)' });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      console.error('❌ Failed to upload leads from Google Sheets:', err.message);
+      res.status(500).json({ error: 'Failed to upload leads from Google Sheets' });
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error('❌ Google Sheets upload error:', err.message);
+    res.status(500).json({ error: 'Failed to process Google Sheets link' });
+  }
+};
+
 module.exports = {
   getLeads,
   addLead,
   updateLead,
   deleteLead,
   uploadLeads,
-  assignLead
+  assignLead,
+  googleSheetsUpload
 };

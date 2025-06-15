@@ -1,77 +1,60 @@
 import { create } from 'zustand';
+import axios from 'axios';
 
 export interface Team {
   id: string;
   name: string;
-  location_id: string;
-  location_name?: string; // optional, if joined in backend
 }
 
-interface TeamState {
+interface TeamStore {
   teams: Team[];
+  loading: boolean;
   fetchTeams: () => Promise<void>;
   addTeam: (team: Omit<Team, 'id'>) => Promise<void>;
-  updateTeam: (id: string, updated: Omit<Team, 'id'>) => Promise<void>;
+  updateTeam: (id: string, team: Omit<Team, 'id'>) => Promise<void>;
   deleteTeam: (id: string) => Promise<void>;
 }
 
-export const useTeamStore = create<TeamState>((set, get) => ({
+export const useTeamStore = create<TeamStore>((set) => ({
   teams: [],
+  loading: false,
 
   fetchTeams: async () => {
+    set({ loading: true });
     try {
-      const res = await fetch('http://localhost:5050/api/teams');
-      if (!res.ok) throw new Error('Failed to fetch teams');
-
-      const data = await res.json();
-
-      const teams: Team[] = data.map((t: any) => ({
-        id: t.id,
-        name: t.name,
-        location_id: t.location_id,
-        location_name: t.location_name ?? '', // optional
-      }));
-
-      set({ teams });
+      const { data } = await axios.get('/api/teams');
+      set({ teams: data });
     } catch (err) {
-      console.error('❌ Failed to fetch teams:', err);
+      console.error('Failed to fetch teams:', err);
+    } finally {
+      set({ loading: false });
     }
   },
 
-  addTeam: async (teamData) => {
+  addTeam: async (team) => {
     try {
-      await fetch('http://localhost:5050/api/teams', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(teamData),
-      });
-      await get().fetchTeams();
+      await axios.post('/api/teams', team);
+      await useTeamStore.getState().fetchTeams();
     } catch (err) {
-      console.error('❌ Failed to add team:', err);
+      console.error('Failed to add team:', err);
     }
   },
 
-  updateTeam: async (id, updatedData) => {
+  updateTeam: async (id, team) => {
     try {
-      await fetch(`http://localhost:5050/api/teams/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData),
-      });
-      await get().fetchTeams();
+      await axios.put(`/api/teams/${id}`, team);
+      await useTeamStore.getState().fetchTeams();
     } catch (err) {
-      console.error('❌ Failed to update team:', err);
+      console.error('Failed to update team:', err);
     }
   },
 
   deleteTeam: async (id) => {
     try {
-      await fetch(`http://localhost:5050/api/teams/${id}`, {
-        method: 'DELETE',
-      });
-      await get().fetchTeams();
+      await axios.delete(`/api/teams/${id}`);
+      await useTeamStore.getState().fetchTeams();
     } catch (err) {
-      console.error('❌ Failed to delete team:', err);
+      console.error('Failed to delete team:', err);
     }
   },
 }));

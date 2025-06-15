@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useTeamStore } from '../../stores/teamStore';
-import { useLocationStore } from '../../stores/locationStore';
 
 interface TeamModalProps {
   isOpen: boolean;
@@ -11,33 +10,24 @@ interface TeamModalProps {
 
 const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, team }) => {
   const { addTeam, updateTeam } = useTeamStore();
-  const { locations, fetchLocations } = useLocationStore();
 
   const [formData, setFormData] = useState({
     name: '',
-    location_id: '',
   });
 
-  useEffect(() => {
-    fetchLocations();
-  }, []);
-
-  // ✅ Prefill form if editing
   useEffect(() => {
     if (team) {
       setFormData({
         name: team.name || '',
-        location_id: team.location_id || '',
       });
     } else {
       setFormData({
         name: '',
-        location_id: '',
       });
     }
   }, [team]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -45,7 +35,7 @@ const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, team }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.location_id) return;
+    if (!formData.name) return;
 
     if (team) {
       await updateTeam(team.id, formData); // ✅ Edit mode
@@ -70,23 +60,7 @@ const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, team }) => {
             required
           />
         </div>
-        <div className="form-group">
-          <label className="form-label">Location</label>
-          <select
-            name="location_id"
-            className="form-input"
-            value={formData.location_id}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Location</option>
-            {locations.map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.name}
-              </option>
-            ))}
-          </select>
-        </div>
+
         <div className="flex justify-end space-x-3 mt-6">
           <button type="button" className="btn-secondary" onClick={onClose}>
             Cancel

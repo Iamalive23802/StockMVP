@@ -3,10 +3,7 @@ const pool = require('../db');
 const getTeams = async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT t.*, l.name AS location_name
-      FROM teams t
-      LEFT JOIN locations l ON t.location_id = l.id
-      ORDER BY t.name
+      SELECT * FROM teams ORDER BY name
     `);
     res.json(result.rows);
   } catch (err) {
@@ -15,12 +12,12 @@ const getTeams = async (req, res) => {
 };
 
 const addTeam = async (req, res) => {
-  const { name, location_id } = req.body;
+  const { name } = req.body;
 
   try {
     const result = await pool.query(
-      'INSERT INTO teams (name, location_id) VALUES ($1, $2) RETURNING *',
-      [name, location_id]
+      'INSERT INTO teams (name) VALUES ($1) RETURNING *',
+      [name]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {

@@ -7,7 +7,7 @@ import LeadsPage from './pages/LeadsPage';
 import TeamsPage from './pages/TeamsPage';
 import AssignTeamPage from './pages/AssignTeamPage';
 import LoginPage from './pages/LoginPage';
-import ClientsPage from './pages/Clientpage'; // ✅ NEW
+import ClientsPage from './pages/Clientpage';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingScreen from './components/LoadingScreen';
 import { useAuthStore } from './stores/authStore';
@@ -46,7 +46,7 @@ function App() {
         <Route
           index
           element={
-            <ProtectedRoute allowedRoles={['super_admin']}>
+            <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
               <Dashboard />
             </ProtectedRoute>
           }
@@ -54,7 +54,7 @@ function App() {
         <Route
           path="users"
           element={
-            <ProtectedRoute allowedRoles={['super_admin']}>
+            <ProtectedRoute allowedRoles={['super_admin', 'admin', 'team_leader']}>
               <UsersPage />
             </ProtectedRoute>
           }

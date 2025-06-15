@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
+import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
 import { useLeadStore } from '../stores/leadStore';
 import { useTeamStore } from '../stores/teamStore';
 
 const Dashboard = () => {
+  const { role, userId } = useAuthStore();
   const { users } = useUserStore();
   const { leads } = useLeadStore();
   const { teams } = useTeamStore();
@@ -14,16 +16,27 @@ const Dashboard = () => {
     useTeamStore.getState().fetchTeams();
   }, []);
 
-  const totalUsers = users.length;
-  const totalLeads = leads.length;
+  const currentUser = users.find(u => u.id === userId);
+  const teamId = currentUser?.team_id;
+
+  const filteredUsers = role === 'team_leader'
+    ? users.filter(u => u.team_id === teamId)
+    : users;
+
+  const filteredLeads = role === 'team_leader'
+    ? leads.filter(l => l.team_id === teamId)
+    : leads;
+
+  const totalUsers = filteredUsers.length;
+  const totalLeads = filteredLeads.length;
   const totalTeams = teams.length;
 
-  const conversionRate = leads.length
-    ? Math.round((leads.filter(l => l.status === 'Won').length / leads.length) * 100)
+  const conversionRate = filteredLeads.length
+    ? Math.round((filteredLeads.filter(l => l.status === 'Won').length / filteredLeads.length) * 100)
     : 0;
 
   const teamPerformance = teams.map(team => {
-    const teamLeads = leads.filter(l => l.team_id === team.id);
+    const teamLeads = filteredLeads.filter(l => l.team_id === team.id);
     const won = teamLeads.filter(l => l.status === 'Won').length;
     const percent = teamLeads.length ? Math.round((won / teamLeads.length) * 100) : 0;
 
@@ -35,12 +48,12 @@ const Dashboard = () => {
   });
 
   const recentActivity = [
-    ...users.slice(-3).reverse().map(u => ({
+    ...filteredUsers.slice(-3).reverse().map(u => ({
       icon: '👤',
       title: `New user: ${u.displayName}`,
       timestamp: 'Recently',
     })),
-    ...leads.slice(-3).reverse().map(l => ({
+    ...filteredLeads.slice(-3).reverse().map(l => ({
       icon: '💼',
       title: `New lead: ${l.fullName}`,
       timestamp: 'Recently',
