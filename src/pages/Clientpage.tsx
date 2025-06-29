@@ -1,8 +1,13 @@
-import { useEffect } from 'react';
-import { useLeadStore } from '../stores/leadStore';
+import { useEffect, useState } from 'react';
+import { Pencil } from 'lucide-react';
+import { useLeadStore, Lead } from '../stores/leadStore';
+import { useAuthStore } from '../stores/authStore';
+import ClientDetailsModal from '../components/modals/ClientDetailsModal';
 
 const ClientsPage = () => {
   const { leads, fetchLeads } = useLeadStore();
+  const { role } = useAuthStore();
+  const [editLead, setEditLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     fetchLeads();
@@ -26,6 +31,12 @@ const ClientsPage = () => {
                 <th className="p-3">Phone</th>
                 <th className="p-3">Notes</th>
                 <th className="p-3">Won On</th>
+                <th className="p-3">Gender</th>
+                <th className="p-3">DOB</th>
+                <th className="p-3">PAN</th>
+                <th className="p-3">Aadhar</th>
+                <th className="p-3">Payment History</th>
+                {role === 'relationship_mgr' && <th className="p-3">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
@@ -40,12 +51,35 @@ const ClientsPage = () => {
                     <td className="p-3 text-gray-400">
                       {lastUpdate?.[2] ? new Date(lastUpdate[2]).toLocaleString() : '—'}
                     </td>
+                    <td className="p-3">{lead.gender || '—'}</td>
+                    <td className="p-3">{lead.dob || '—'}</td>
+                    <td className="p-3">{lead.panCardNumber || '—'}</td>
+                    <td className="p-3">{lead.aadharCardNumber || '—'}</td>
+                    <td className="p-3">{lead.paymentHistory || '—'}</td>
+                    {role === 'relationship_mgr' && (
+                      <td className="p-3">
+                        <button
+                          onClick={() => setEditLead(lead)}
+                          className="text-blue-400 hover:text-blue-300"
+                          title="Edit Client Details"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })}
             </tbody>
           </table>
         </div>
+      )}
+      {editLead && (
+        <ClientDetailsModal
+          isOpen={true}
+          onClose={() => setEditLead(null)}
+          lead={editLead}
+        />
       )}
     </div>
   );
