@@ -14,9 +14,12 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     gender: '',
     dob: '',
     panCardNumber: '',
-    aadharCardNumber: '',
-    paymentHistory: ''
+    aadharCardNumber: ''
   });
+
+  const [paymentHistory, setPaymentHistory] = useState<
+    { amount: string; date: string }[]
+  >([]);
 
   useEffect(() => {
     if (lead) {
@@ -24,13 +27,26 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
         gender: lead.gender || '',
         dob: lead.dob || '',
         panCardNumber: lead.panCardNumber || '',
-        aadharCardNumber: lead.aadharCardNumber || '',
-        paymentHistory: lead.paymentHistory || ''
+        aadharCardNumber: lead.aadharCardNumber || ''
       });
+
+      const history = lead.paymentHistory
+        ?.split('|||')
+        .map(entry => {
+          const parts = entry.split('__');
+          return {
+            amount: parts[0] || '',
+            date: parts[1] || new Date().toISOString()
+          };
+        }) || [];
+
+      setPaymentHistory(history.reverse()); // newest first
     }
   }, [lead]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -42,8 +58,25 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000)).toString();
   };
 
+  const handlePaymentChange = (index: number, value: string) => {
+    const updated = [...paymentHistory];
+    updated[index].amount = value;
+    setPaymentHistory(updated);
+  };
+
+  const addPaymentRow = () => {
+    const now = new Date().toISOString();
+    setPaymentHistory([{ amount: '', date: now }, ...paymentHistory]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const reversed = [...paymentHistory].reverse();
+    const historyStr = reversed
+      .map((p) => `${p.amount}__${p.date}`)
+      .join('|||');
+
     await updateLead(lead.id, {
       ...lead,
       gender: formData.gender,
@@ -51,7 +84,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
       age: calculateAge(formData.dob),
       panCardNumber: formData.panCardNumber,
       aadharCardNumber: formData.aadharCardNumber,
-      paymentHistory: formData.paymentHistory
+      paymentHistory: historyStr
     });
     onClose();
   };
@@ -81,8 +114,39 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
           <input type="text" name="aadharCardNumber" className="form-input" value={formData.aadharCardNumber} onChange={handleChange} />
         </div>
         <div className="form-group">
-          <label className="form-label">Payment History</label>
-          <textarea name="paymentHistory" className="form-input" rows={3} value={formData.paymentHistory} onChange={handleChange} />
+          <div className="flex justify-between items-center mb-2">
+            <label className="form-label">Payment History</label>
+            <button
+              type="button"
+              onClick={addPaymentRow}
+              className="text-sm px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 transition"
+            >
+              + Add Payment
+            </button>
+          </div>
+          <table className="w-full text-sm text-left">
+            <thead className="text-gray-400 border-b border-gray-600">
+              <tr>
+                <th className="p-2">Date</th>
+                <th className="p-2">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paymentHistory.map((entry, i) => (
+                <tr key={i} className="border-b border-gray-700">
+                  <td className="p-2 text-gray-400">{new Date(entry.date).toLocaleDateString()}</td>
+                  <td className="p-2">
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={entry.amount}
+                      onChange={(e) => handlePaymentChange(i, e.target.value)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
         <div className="flex justify-end space-x-3 mt-6">
           <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>

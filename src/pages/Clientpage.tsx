@@ -55,7 +55,18 @@ const ClientsPage = () => {
                     <td className="p-3">{lead.dob || '—'}</td>
                     <td className="p-3">{lead.panCardNumber || '—'}</td>
                     <td className="p-3">{lead.aadharCardNumber || '—'}</td>
-                    <td className="p-3">{lead.paymentHistory || '—'}</td>
+                    <td className="p-3">
+                      {lead.paymentHistory
+                        ? lead.paymentHistory.split('|||').map((ph, idx) => {
+                            const [amount, date] = ph.split('__');
+                            return (
+                              <div key={idx}>
+                                {new Date(date).toLocaleDateString()} - {amount}
+                              </div>
+                            );
+                          })
+                        : '—'}
+                    </td>
                     {role === 'relationship_mgr' && (
                       <td className="p-3">
                         <button
