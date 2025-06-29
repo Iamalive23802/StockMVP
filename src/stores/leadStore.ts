@@ -7,7 +7,13 @@ export interface Lead {
   fullName: string;
   phone: string;
   email: string;
+  altNumber: string;
   notes: string;
+  deematAccountName: string;
+  profession: string;
+  stateName: string;
+  capital: string;
+  segment: string;
   status: 'New' | 'Contacted' | 'Qualified' | 'Proposal' | 'Won' | 'Lost';
   team_id: string;
   assigned_to?: string;
@@ -33,7 +39,13 @@ export const useLeadStore = create<LeadStore>((set) => ({
       const { data } = await axios.get('/api/leads');
       const mapped = data.map((lead: any) => ({
         ...lead,
-        fullName: lead.full_name, // ✅ map to camelCase
+        fullName: lead.full_name,
+        altNumber: lead.alt_number,
+        deematAccountName: lead.deemat_account_name,
+        profession: lead.profession,
+        stateName: lead.state_name,
+        capital: lead.capital,
+        segment: lead.segment
       }));
       set({ leads: mapped });
     } catch (err) {
