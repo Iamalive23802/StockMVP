@@ -48,7 +48,19 @@ const getLeads = async (req, res) => {
 };
 
 const addLead = async (req, res) => {
-  const { fullName, email, phone, notes, team_id } = req.body;
+  const {
+    fullName,
+    email,
+    phone,
+    altNumber,
+    notes,
+    deematAccountName,
+    profession,
+    stateName,
+    capital,
+    segment,
+    team_id
+  } = req.body;
   const { role, user_id } = req.query;
 
   if (!fullName || !email || !phone) {
@@ -78,10 +90,23 @@ const addLead = async (req, res) => {
     const safeAssignedTo = assignedTo && assignedTo.trim() !== '' ? assignedTo : null;
 
     const result = await pool.query(
-      `INSERT INTO leads (full_name, email, phone, notes, team_id, assigned_to)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id, assigned_to)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
-      [fullName, email, phoneNorm, notes || '', safeTeamId, safeAssignedTo]
+      [
+        fullName,
+        email,
+        phoneNorm,
+        altNumber || '',
+        notes || '',
+        deematAccountName || '',
+        profession || '',
+        stateName || '',
+        capital || '',
+        segment || '',
+        safeTeamId,
+        safeAssignedTo
+      ]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -92,7 +117,21 @@ const addLead = async (req, res) => {
 
 const updateLead = async (req, res) => {
   const { id } = req.params;
-  const { fullName, email, phone, notes, status, team_id, assigned_to } = req.body;
+  const {
+    fullName,
+    email,
+    phone,
+    altNumber,
+    notes,
+    deematAccountName,
+    profession,
+    stateName,
+    capital,
+    segment,
+    status,
+    team_id,
+    assigned_to
+  } = req.body;
 
   if (!fullName || !email || !phone || !status) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -106,10 +145,36 @@ const updateLead = async (req, res) => {
   try {
     const result = await pool.query(
       `UPDATE leads
-       SET full_name = $1, email = $2, phone = $3, notes = $4, status = $5,
-           team_id = $6, assigned_to = $7
-       WHERE id = $8 RETURNING *`,
-      [fullName, email, phoneNorm, notes || '', status, safeTeamId, safeAssignedTo, id]
+       SET full_name = $1,
+           email = $2,
+           phone = $3,
+           alt_number = $4,
+           notes = $5,
+           deemat_account_name = $6,
+           profession = $7,
+           state_name = $8,
+           capital = $9,
+           segment = $10,
+           status = $11,
+           team_id = $12,
+           assigned_to = $13
+       WHERE id = $14 RETURNING *`,
+      [
+        fullName,
+        email,
+        phoneNorm,
+        altNumber || '',
+        notes || '',
+        deematAccountName || '',
+        profession || '',
+        stateName || '',
+        capital || '',
+        segment || '',
+        status,
+        safeTeamId,
+        safeAssignedTo,
+        id
+      ]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -182,7 +247,13 @@ const uploadLeads = [
         const fullName = row['Full Name'] || row.fullName || '';
         const email = row['Email'] || row.email || '';
         const phone = normalizePhone(row['Phone'] || row.phone || '');
+        const altNumber = row['Alternate Number'] || row.altNumber || '';
         const notes = row['Notes'] || row.notes || '';
+        const deematAccountName = row['Deemat Account Name'] || row.deematAccountName || '';
+        const profession = row['Profession'] || row.profession || '';
+        const stateName = row['State Name'] || row.stateName || '';
+        const capital = row['Capital'] || row.capital || '';
+        const segment = row['Segment'] || row.segment || '';
         const team_id = row['Team ID'] || row.team_id || null;
 
         const safeTeamId = team_id && team_id.trim() !== '' ? team_id : null;
@@ -192,9 +263,21 @@ const uploadLeads = [
         if (sheetPhones.has(phone)) continue;
 
         await client.query(
-          `INSERT INTO leads (full_name, email, phone, notes, team_id)
-           VALUES ($1, $2, $3, $4, $5)`,
-          [fullName, email, phone, notes, safeTeamId]
+          `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+          [
+            fullName,
+            email,
+            phone,
+            altNumber,
+            notes,
+            deematAccountName,
+            profession,
+            stateName,
+            capital,
+            segment,
+            safeTeamId
+          ]
         );
 
         sheetPhones.add(phone);
@@ -249,7 +332,13 @@ const googleSheetsUpload = async (req, res) => {
         const fullName = row['Full Name'] || row.fullName || '';
         const email = row['Email'] || row.email || '';
         const phone = normalizePhone(row['Phone'] || row.phone || '');
+        const altNumber = row['Alternate Number'] || row.altNumber || '';
         const notes = row['Notes'] || row.notes || '';
+        const deematAccountName = row['Deemat Account Name'] || row.deematAccountName || '';
+        const profession = row['Profession'] || row.profession || '';
+        const stateName = row['State Name'] || row.stateName || '';
+        const capital = row['Capital'] || row.capital || '';
+        const segment = row['Segment'] || row.segment || '';
         const team_id = row['Team ID'] || row.team_id || null;
 
         const safeTeamId = team_id && team_id.trim() !== '' ? team_id : null;
@@ -259,9 +348,21 @@ const googleSheetsUpload = async (req, res) => {
         if (sheetPhones.has(phone)) continue;
 
         await client.query(
-          `INSERT INTO leads (full_name, email, phone, notes, team_id)
-           VALUES ($1, $2, $3, $4, $5)`,
-          [fullName, email, phone, notes, safeTeamId]
+          `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+          [
+            fullName,
+            email,
+            phone,
+            altNumber,
+            notes,
+            deematAccountName,
+            profession,
+            stateName,
+            capital,
+            segment,
+            safeTeamId
+          ]
         );
 
         sheetPhones.add(phone);

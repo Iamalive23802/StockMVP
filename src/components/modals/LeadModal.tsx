@@ -24,7 +24,13 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     fullName: '',
     phone: '',
     email: '',
+    altNumber: '',
     notes: '',
+    deematAccountName: '',
+    profession: '',
+    stateName: '',
+    capital: '',
+    segment: '',
     status: 'New',
     team_id: '',
   });
@@ -40,7 +46,13 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
         fullName: lead.fullName || '',
         phone: lead.phone || '',
         email: lead.email || '',
+        altNumber: lead.altNumber || '',
         notes: lead.notes || '',
+        deematAccountName: lead.deematAccountName || '',
+        profession: lead.profession || '',
+        stateName: lead.stateName || '',
+        capital: lead.capital || '',
+        segment: lead.segment || '',
         status: lead.status || 'New',
         team_id: lead.team_id || '',
       });
@@ -49,7 +61,13 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
         fullName: '',
         phone: '',
         email: '',
+        altNumber: '',
         notes: '',
+        deematAccountName: '',
+        profession: '',
+        stateName: '',
+        capital: '',
+        segment: '',
         status: 'New',
         team_id: '',
       });
@@ -131,6 +149,109 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.email}
             onChange={handleChange}
             required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Alternate Number</label>
+          <input
+            type="text"
+            name="altNumber"
+            className="form-input"
+            value={formData.altNumber}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Deemat Account Name</label>
+          <select
+            name="deematAccountName"
+            className="form-input"
+            value={formData.deematAccountName}
+            onChange={handleChange}
+          >
+            <option value="">Select</option>
+            <option value="Zerodha">Zerodha</option>
+            <option value="Upstox">Upstox</option>
+            <option value="Angel One">Angel One</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Profession</label>
+          <select
+            name="profession"
+            className="form-input"
+            value={formData.profession}
+            onChange={handleChange}
+          >
+            <option value="">Select</option>
+            <option value="Student">Student</option>
+            <option value="Private Sector">Private Sector</option>
+            <option value="Business">Business</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">State</label>
+          <select
+            name="stateName"
+            className="form-input"
+            value={formData.stateName}
+            onChange={handleChange}
+          >
+            <option value="">Select</option>
+            <option value="Andhra Pradesh">Andhra Pradesh</option>
+            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+            <option value="Assam">Assam</option>
+            <option value="Bihar">Bihar</option>
+            <option value="Chhattisgarh">Chhattisgarh</option>
+            <option value="Goa">Goa</option>
+            <option value="Gujarat">Gujarat</option>
+            <option value="Haryana">Haryana</option>
+            <option value="Himachal Pradesh">Himachal Pradesh</option>
+            <option value="Jharkhand">Jharkhand</option>
+            <option value="Karnataka">Karnataka</option>
+            <option value="Kerala">Kerala</option>
+            <option value="Madhya Pradesh">Madhya Pradesh</option>
+            <option value="Maharashtra">Maharashtra</option>
+            <option value="Manipur">Manipur</option>
+            <option value="Meghalaya">Meghalaya</option>
+            <option value="Mizoram">Mizoram</option>
+            <option value="Nagaland">Nagaland</option>
+            <option value="Odisha">Odisha</option>
+            <option value="Punjab">Punjab</option>
+            <option value="Rajasthan">Rajasthan</option>
+            <option value="Sikkim">Sikkim</option>
+            <option value="Tamil Nadu">Tamil Nadu</option>
+            <option value="Telangana">Telangana</option>
+            <option value="Tripura">Tripura</option>
+            <option value="Uttar Pradesh">Uttar Pradesh</option>
+            <option value="Uttarakhand">Uttarakhand</option>
+            <option value="West Bengal">West Bengal</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Capital</label>
+          <input
+            type="text"
+            name="capital"
+            className="form-input"
+            value={formData.capital}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Segment</label>
+          <input
+            type="text"
+            name="segment"
+            className="form-input"
+            value={formData.segment}
+            onChange={handleChange}
           />
         </div>
 

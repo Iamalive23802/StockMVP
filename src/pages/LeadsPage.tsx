@@ -381,6 +381,12 @@ function LeadsPage() {
             <p><strong>Full Name:</strong> {infoLead.fullName}</p>
             <p><strong>Email:</strong> {infoLead.email}</p>
             <p><strong>Phone:</strong> {infoLead.phone || '—'}</p>
+            <p><strong>Alternate Number:</strong> {infoLead.altNumber || '—'}</p>
+            <p><strong>Deemat Account:</strong> {infoLead.deematAccountName || '—'}</p>
+            <p><strong>Profession:</strong> {infoLead.profession || '—'}</p>
+            <p><strong>State:</strong> {infoLead.stateName || '—'}</p>
+            <p><strong>Capital:</strong> {infoLead.capital || '—'}</p>
+            <p><strong>Segment:</strong> {infoLead.segment || '—'}</p>
             <p><strong>Status:</strong> {infoLead.status}</p>
             <p><strong>Team:</strong> {teams.find(t => t.id === infoLead.team_id)?.name || '—'}</p>
             <p><strong>Notes:</strong> {infoLead.notes || '—'}</p>
