@@ -31,6 +31,14 @@ const Dashboard = () => {
   const totalLeads = filteredLeads.length;
   const totalTeams = teams.length;
 
+  const paidClients = filteredLeads.filter(l => l.status === 'Won' && l.paymentHistory && l.paymentHistory.trim() !== '').length;
+  const totalSales = filteredLeads.reduce((sum, lead) => {
+    if (lead.status === 'Won' && lead.paymentHistory) {
+      return sum + lead.paymentHistory.split('|||').reduce((s, ph) => s + parseFloat(ph.split('__')[0] || '0'), 0);
+    }
+    return sum;
+  }, 0);
+
   const conversionRate = filteredLeads.length
     ? Math.round((filteredLeads.filter(l => l.status === 'Won').length / filteredLeads.length) * 100)
     : 0;
@@ -43,9 +51,27 @@ const Dashboard = () => {
     return {
       name: team.name,
       percent,
+      wins: won,
       avatarColor: ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-yellow-500'][Math.floor(Math.random() * 4)],
     };
   });
+
+  const topTeams = [...teamPerformance]
+    .sort((a, b) => b.wins - a.wins)
+    .slice(0, 5);
+
+  const rmSales = users
+    .filter(u => u.role === 'relationship_mgr')
+    .map(rm => {
+      const rmLeads = filteredLeads.filter(l => l.assigned_to === rm.id && l.status === 'Won');
+      const sales = rmLeads.reduce((sum, lead) => {
+        if (lead.paymentHistory) {
+          return sum + lead.paymentHistory.split('|||').reduce((s, ph) => s + parseFloat(ph.split('__')[0] || '0'), 0);
+        }
+        return sum;
+      }, 0);
+      return { name: rm.displayName, sales };
+    });
 
   const recentActivity = [
     ...filteredUsers.slice(-3).reverse().map(u => ({
@@ -64,18 +90,17 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-900 text-white px-6 py-10">
       <h1 className="text-3xl font-bold mb-8">📊 CRM Dashboard</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <StatCard title="Users" value={totalUsers} icon="👥" color="from-blue-500 to-blue-700" />
-        <StatCard title="Leads" value={totalLeads} icon="💼" color="from-green-500 to-green-700" />
-        <StatCard title="Teams" value={totalTeams} icon="🧑‍🤝‍🧑" color="from-purple-500 to-purple-700" />
-        <StatCard title="Conversion" value={`${conversionRate}%`} icon="📈" color="from-yellow-500 to-yellow-700" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <StatCard title="Total Leads" value={totalLeads} icon="💼" color="from-green-500 to-green-700" />
+        <StatCard title="Paid Clients" value={paidClients} icon="🤑" color="from-blue-500 to-blue-700" />
+        <StatCard title="Total Sales" value={`₹${totalSales}`} icon="💰" color="from-yellow-500 to-yellow-700" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="bg-gray-800 rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-semibold mb-6">🏅 Team Performance</h2>
+          <h2 className="text-xl font-semibold mb-6">🏅 Top Teams</h2>
           <div className="space-y-6">
-            {teamPerformance.map((team, i) => (
+            {topTeams.map((team, i) => (
               <div key={i}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-3">
@@ -84,7 +109,7 @@ const Dashboard = () => {
                     </div>
                     <span>{team.name}</span>
                   </div>
-                  <span className="text-sm text-gray-400">{team.percent}%</span>
+                  <span className="text-sm text-gray-400">{team.wins} wins</span>
                 </div>
                 <div className="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
                   <div
@@ -95,6 +120,18 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="bg-gray-800 rounded-xl p-6 shadow-lg">
+          <h2 className="text-xl font-semibold mb-6">🤝 Relationship Manager Sales</h2>
+          <ul className="space-y-4 max-h-60 overflow-y-auto">
+            {rmSales.map((rm, idx) => (
+              <li key={idx} className="flex items-center justify-between">
+                <span>{rm.name}</span>
+                <span>{rm.sales}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="bg-gray-800 rounded-xl p-6 shadow-lg">
