@@ -9,12 +9,15 @@ import {
   Trophy
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import { useToastStore } from '../stores/toastStore';
 
 function Sidebar() {
   const { role, logout } = useAuthStore();
+  const addToast = useToastStore((state) => state.addToast);
 
   const handleLogout = () => {
     logout();
+    addToast('Logged out', 'success');
   };
 
   const menuItems = [

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
+import { useToastStore } from './toastStore';
 
 export interface Team {
   id: string;
@@ -32,29 +33,38 @@ export const useTeamStore = create<TeamStore>((set) => ({
   },
 
   addTeam: async (team) => {
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.post('/api/teams', team);
       await useTeamStore.getState().fetchTeams();
+      addToast('Team added successfully', 'success');
     } catch (err) {
       console.error('Failed to add team:', err);
+      addToast('Failed to add team', 'error');
     }
   },
 
   updateTeam: async (id, team) => {
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.put(`/api/teams/${id}`, team);
       await useTeamStore.getState().fetchTeams();
+      addToast('Team updated successfully', 'success');
     } catch (err) {
       console.error('Failed to update team:', err);
+      addToast('Failed to update team', 'error');
     }
   },
 
   deleteTeam: async (id) => {
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.delete(`/api/teams/${id}`);
       await useTeamStore.getState().fetchTeams();
+      addToast('Team deleted successfully', 'success');
     } catch (err) {
       console.error('Failed to delete team:', err);
+      addToast('Failed to delete team', 'error');
     }
   },
 }));

@@ -41,7 +41,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div 
+      <div
         ref={modalRef}
         className="bg-gray-800 rounded-lg shadow-lg w-full max-w-lg mx-4 overflow-hidden transform transition-all animate-fade-in"
       >
@@ -54,9 +54,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
             <X size={20} />
           </button>
         </div>
-        <div className="p-6">
-          {children}
-        </div>
+        <div className="p-6">{children}</div>
       </div>
     </div>
   );

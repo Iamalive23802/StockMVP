@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate } from 'react-router-dom';
+import { useToastStore } from '../stores/toastStore';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -8,6 +9,7 @@ function LoginPage() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const { login, loading } = useAuthStore();
+  const addToast = useToastStore((state) => state.addToast);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,12 +23,14 @@ function LoginPage() {
 
     try {
       await login(email, password);
-      navigate('/'); // Redirect to dashboard after login
+      addToast('Logged in successfully', 'success');
+      navigate('/');
     } catch (err: any) {
       // ✅ Safely access error message from backend
       const backendMessage =
         err?.response?.data?.message || 'Login failed. Please try again.';
       setErrorMsg(backendMessage);
+      addToast(backendMessage, 'error');
     }
   };
 

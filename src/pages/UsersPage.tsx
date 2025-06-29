@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import UserModal from '../components/modals/UserModal';
+import ConfirmModal from '../components/modals/ConfirmModal';
 import type { User } from '../stores/userStore';
 
 function UsersPage() {
@@ -10,6 +11,7 @@ function UsersPage() {
   const { users, fetchUsers, deleteUser } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -26,8 +28,13 @@ function UsersPage() {
   };
 
   const handleDeleteUser = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      deleteUser(id);
+    setUserToDelete(id);
+  };
+
+  const confirmDelete = () => {
+    if (userToDelete) {
+      deleteUser(userToDelete);
+      setUserToDelete(null);
     }
   };
 
@@ -146,6 +153,14 @@ function UsersPage() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           user={editingUser}
+        />
+      )}
+      {userToDelete && (
+        <ConfirmModal
+          isOpen={true}
+          onClose={() => setUserToDelete(null)}
+          onConfirm={confirmDelete}
+          message="Are you sure you want to delete this user?"
         />
       )}
     </div>

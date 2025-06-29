@@ -3,12 +3,14 @@ import { Trash2, Plus, Pencil } from 'lucide-react';
 import { useTeamStore } from '../stores/teamStore';
 import { useUserStore } from '../stores/userStore';
 import TeamModal from '../components/modals/TeamModal';
+import ConfirmModal from '../components/modals/ConfirmModal';
 
 function TeamsPage() {
   const { teams, fetchTeams, deleteTeam } = useTeamStore();
   const { users, fetchUsers } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<any>(null);
+  const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTeams();
@@ -26,8 +28,13 @@ function TeamsPage() {
   };
 
   const handleDeleteTeam = (teamId: string) => {
-    if (window.confirm('Are you sure you want to delete this team?')) {
-      deleteTeam(teamId);
+    setTeamToDelete(teamId);
+  };
+
+  const confirmDelete = () => {
+    if (teamToDelete) {
+      deleteTeam(teamToDelete);
+      setTeamToDelete(null);
     }
   };
 
@@ -95,6 +102,14 @@ function TeamsPage() {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           team={editingTeam}
+        />
+      )}
+      {teamToDelete && (
+        <ConfirmModal
+          isOpen={true}
+          onClose={() => setTeamToDelete(null)}
+          onConfirm={confirmDelete}
+          message="Are you sure you want to delete this team?"
         />
       )}
     </div>

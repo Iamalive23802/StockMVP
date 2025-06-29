@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Modal from './Modal';
 import { Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { useToastStore } from '../../stores/toastStore';
 
 interface UploadLeadsModalProps {
   isOpen: boolean;
@@ -46,6 +47,7 @@ const FileUploadSection: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const addToast = useToastStore((state) => state.addToast);
 
   const validateAndSetFile = (selectedFile: File | undefined) => {
     setError('');
@@ -128,12 +130,14 @@ const FileUploadSection: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
       if (!response.ok) throw new Error('Failed to upload leads');
 
-      alert('Leads uploaded successfully!');
+      addToast('Leads uploaded successfully!', 'success');
       onClose();
       setFile(null);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Failed to upload leads');
+      const msg = err.message || 'Failed to upload leads';
+      setError(msg);
+      addToast(msg, 'error');
     } finally {
       setLoading(false);
     }
@@ -218,6 +222,7 @@ const GoogleSheetsSection: React.FC<{ onClose: () => void }> = ({ onClose }) => 
   const [sheetLink, setSheetLink] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const addToast = useToastStore((state) => state.addToast);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -246,12 +251,14 @@ const GoogleSheetsSection: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         throw new Error(result.message || 'Failed to upload leads');
       }
 
-      alert('Leads uploaded successfully!');
+      addToast('Leads uploaded successfully!', 'success');
       onClose();
       setSheetLink('');
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Failed to upload leads');
+      const msg = err.message || 'Failed to upload leads';
+      setError(msg);
+      addToast(msg, 'error');
     } finally {
       setLoading(false);
     }

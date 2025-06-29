@@ -58,4 +58,8 @@ body {
   .form-group {
     @apply mb-4;
   }
-}
+
+  .toast {
+    @apply px-4 py-2 rounded shadow text-sm flex items-center;
+  }
+

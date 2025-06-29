@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
+import { useToastStore } from './toastStore';
 
 export interface User {
   id: string;
@@ -43,29 +44,38 @@ export const useUserStore = create<UserStore>((set) => ({
   },
 
   addUser: async (user) => {
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.post('/api/users', user);
       await useUserStore.getState().fetchUsers();
+      addToast('User added successfully', 'success');
     } catch (err) {
       console.error('Failed to add user:', err);
+      addToast('Failed to add user', 'error');
     }
   },
 
   updateUser: async (id, user) => {
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.put(`/api/users/${id}`, user);
       await useUserStore.getState().fetchUsers();
+      addToast('User updated successfully', 'success');
     } catch (err) {
       console.error('Failed to update user:', err);
+      addToast('Failed to update user', 'error');
     }
   },
 
   deleteUser: async (id) => {
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.delete(`/api/users/${id}`);
       await useUserStore.getState().fetchUsers();
+      addToast('User deleted successfully', 'success');
     } catch (err) {
       console.error('Failed to delete user:', err);
+      addToast('Failed to delete user', 'error');
     }
   },
 }));
