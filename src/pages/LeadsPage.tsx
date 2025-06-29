@@ -9,6 +9,8 @@ import UploadLeadsModal from '../components/modals/UploadLeadsModal';
 import AssignLeadModal from '../components/modals/AssignLeadModal';
 import Modal from '../components/modals/Modal';
 import LeadProgressModal from '../components/modals/LeadProgressModal';
+import ConfirmModal from '../components/modals/ConfirmModal';
+import { useToastStore } from '../stores/toastStore';
 import type { Lead } from '../stores/leadStore';
 
 function LeadsPage() {
@@ -16,6 +18,7 @@ function LeadsPage() {
   const { leads, fetchLeads, deleteLead } = useLeadStore();
   const { teams, fetchTeams } = useTeamStore();
   const { users, fetchUsers } = useUserStore();
+  const addToast = useToastStore((state) => state.addToast);
 
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -32,6 +35,7 @@ function LeadsPage() {
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragSelecting, setDragSelecting] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
 
   const statusFilterRef = useRef<HTMLDivElement>(null);
 
@@ -71,14 +75,19 @@ function LeadsPage() {
   };
 
   const handleDeleteLead = (leadId: string) => {
-    if (window.confirm('Are you sure you want to delete this lead?')) {
-      deleteLead(leadId);
+    setLeadToDelete(leadId);
+  };
+
+  const confirmDelete = () => {
+    if (leadToDelete) {
+      deleteLead(leadToDelete);
+      setLeadToDelete(null);
     }
   };
 
   const handleBulkAssign = async () => {
     if (!selectedRM || selectedLeads.length === 0) {
-      alert('Please select at least one lead and an RM');
+      addToast('Please select at least one lead and an RM', 'error');
       return;
     }
 
@@ -93,12 +102,12 @@ function LeadsPage() {
         )
       );
 
-      alert('Selected leads assigned successfully');
+      addToast('Selected leads assigned successfully', 'success');
       setSelectedLeads([]);
       fetchLeads();
     } catch (err) {
       console.error('Failed to assign leads:', err);
-      alert('Failed to assign leads');
+      addToast('Failed to assign leads', 'error');
     }
   };
 
@@ -398,6 +407,14 @@ function LeadsPage() {
           leadId={selectedLeadId}
           availableUsers={availableUsers}
           onAssigned={fetchLeads}
+        />
+      )}
+      {leadToDelete && (
+        <ConfirmModal
+          isOpen={true}
+          onClose={() => setLeadToDelete(null)}
+          onConfirm={confirmDelete}
+          message="Are you sure you want to delete this lead?"
         />
       )}
     </div>

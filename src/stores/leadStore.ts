@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
+import { useToastStore } from './toastStore';
 
 export interface Lead {
   id: string;
@@ -43,29 +44,38 @@ export const useLeadStore = create<LeadStore>((set) => ({
   },
 
   addLead: async (lead) => {
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.post('/api/leads', lead);
       await useLeadStore.getState().fetchLeads();
+      addToast('Lead added successfully', 'success');
     } catch (err) {
       console.error('Failed to add lead:', err);
+      addToast('Failed to add lead', 'error');
     }
   },
 
   updateLead: async (id, lead) => {
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.put(`/api/leads/${id}`, lead);
       await useLeadStore.getState().fetchLeads();
+      addToast('Lead updated successfully', 'success');
     } catch (err) {
       console.error('Failed to update lead:', err);
+      addToast('Failed to update lead', 'error');
     }
   },
 
   deleteLead: async (id) => {
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.delete(`/api/leads/${id}`);
       await useLeadStore.getState().fetchLeads();
+      addToast('Lead deleted successfully', 'success');
     } catch (err) {
       console.error('Failed to delete lead:', err);
+      addToast('Failed to delete lead', 'error');
     }
   },
 
@@ -73,13 +83,16 @@ export const useLeadStore = create<LeadStore>((set) => ({
     const formData = new FormData();
     formData.append('file', file);
 
+    const addToast = useToastStore.getState().addToast;
     try {
       await axios.post('/api/leads/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       await useLeadStore.getState().fetchLeads();
+      addToast('Leads uploaded successfully', 'success');
     } catch (err) {
       console.error('Failed to upload leads:', err);
+      addToast('Failed to upload leads', 'error');
     }
   },
 }));

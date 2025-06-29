@@ -4,6 +4,7 @@ import { useLeadStore } from '../../stores/leadStore';
 import { useTeamStore } from '../../stores/teamStore';
 import { useUserStore } from '../../stores/userStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useToastStore } from '../../stores/toastStore';
 import type { Lead } from '../../stores/leadStore';
 
 interface LeadModalProps {
@@ -17,6 +18,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
   const { fetchTeams } = useTeamStore();
   const { users, fetchUsers } = useUserStore();
   const { role, userId } = useAuthStore();
+  const addToast = useToastStore((state) => state.addToast);
 
   const [formData, setFormData] = useState<Omit<Lead, 'id'>>({
     fullName: '',
@@ -65,7 +67,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     e.preventDefault();
 
     if (!lead && formData.phone && leads.some(l => l.phone === formData.phone)) {
-      alert('A lead with this phone number already exists!');
+      addToast('A lead with this phone number already exists!', 'error');
       return;
     }
 
