@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
+import ConfirmModal from './ConfirmModal';
 import { useLeadStore } from '../../stores/leadStore';
 import type { Lead } from '../../stores/leadStore';
 
@@ -58,18 +59,41 @@ const LeadProgressModal: React.FC<LeadProgressModalProps> = ({ isOpen, onClose, 
     const updatedNotes = reversed
       .map((entry) => `${entry.note.trim()}__${entry.status}__${entry.date}`)
       .join('|||');
+    const newStatus = noteHistory[0]?.status || 'New';
+    if (lead.status !== 'Won' && newStatus === 'Won') {
+      setShowConfirm(true);
+      setPendingUpdate({ updatedNotes, newStatus });
+      return;
+    }
 
     await updateLead(lead.id, {
       ...lead,
       fullName,
       notes: updatedNotes,
-      status: noteHistory[0]?.status || 'New',
+      status: newStatus,
     });
 
     onClose();
   };
 
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<{ updatedNotes: string; newStatus: Lead['status'] } | null>(null);
+
+  const confirmWon = async () => {
+    if (!pendingUpdate) return;
+    await updateLead(lead.id, {
+      ...lead,
+      fullName,
+      notes: pendingUpdate.updatedNotes,
+      status: pendingUpdate.newStatus,
+    });
+    setShowConfirm(false);
+    setPendingUpdate(null);
+    onClose();
+  };
+
   return (
+    <>
     <Modal isOpen={isOpen} onClose={onClose} title={`Update Progress - ${lead.fullName}`}>
       <form onSubmit={handleSubmit} className="space-y-4 text-gray-200">
         <div>
@@ -151,6 +175,18 @@ const LeadProgressModal: React.FC<LeadProgressModalProps> = ({ isOpen, onClose, 
         </div>
       </form>
     </Modal>
+    {showConfirm && (
+      <ConfirmModal
+        isOpen={true}
+        onClose={() => {
+          setShowConfirm(false);
+          setPendingUpdate(null);
+        }}
+        onConfirm={confirmWon}
+        message="Marking this lead as Won will convert it to a client and cannot be undone. Continue?"
+      />
+    )}
+    </>
   );
 };
 

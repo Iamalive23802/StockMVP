@@ -14,6 +14,12 @@ export interface Lead {
   stateName: string;
   capital: string;
   segment: string;
+  gender?: string;
+  dob?: string;
+  age?: string;
+  panCardNumber?: string;
+  aadharCardNumber?: string;
+  paymentHistory?: string;
   status: 'New' | 'Contacted' | 'Qualified' | 'Proposal' | 'Won' | 'Lost';
   team_id: string;
   assigned_to?: string;
@@ -45,7 +51,13 @@ export const useLeadStore = create<LeadStore>((set) => ({
         profession: lead.profession,
         stateName: lead.state_name,
         capital: lead.capital,
-        segment: lead.segment
+        segment: lead.segment,
+        gender: lead.gender,
+        dob: lead.dob,
+        age: lead.age,
+        panCardNumber: lead.pan_card_number,
+        aadharCardNumber: lead.aadhar_card_number,
+        paymentHistory: lead.payment_history
       }));
       set({ leads: mapped });
     } catch (err) {

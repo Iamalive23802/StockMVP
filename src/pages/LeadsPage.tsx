@@ -345,8 +345,9 @@ function LeadsPage() {
                     </button>
                     {role === 'relationship_mgr' ? (
                       <button
-                        onClick={() => setProgressLead(lead)}
-                        className="text-blue-400 hover:text-blue-300"
+                        onClick={() => lead.status !== 'Won' && setProgressLead(lead)}
+                        className={`text-blue-400 hover:text-blue-300 ${lead.status === 'Won' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={lead.status === 'Won'}
                       >
                         <Pencil size={16} />
                       </button>
@@ -390,6 +391,17 @@ function LeadsPage() {
             <p><strong>Status:</strong> {infoLead.status}</p>
             <p><strong>Team:</strong> {teams.find(t => t.id === infoLead.team_id)?.name || '—'}</p>
             <p><strong>Notes:</strong> {infoLead.notes || '—'}</p>
+            {infoLead.status === 'Won' && (
+              <div className="pt-2 border-t border-gray-700 space-y-2">
+                <p className="font-semibold">Client Details</p>
+                <p><strong>Gender:</strong> {infoLead.gender || '—'}</p>
+                <p><strong>Date of Birth:</strong> {infoLead.dob || '—'}</p>
+                <p><strong>Age:</strong> {infoLead.age || '—'}</p>
+                <p><strong>PAN Card No:</strong> {infoLead.panCardNumber || '—'}</p>
+                <p><strong>Aadhar Card No:</strong> {infoLead.aadharCardNumber || '—'}</p>
+                <p><strong>Payment History:</strong> {infoLead.paymentHistory || '—'}</p>
+              </div>
+            )}
           </div>
         </Modal>
       )}
