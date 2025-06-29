@@ -23,6 +23,9 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
     team_id: '',
   });
 
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+
   useEffect(() => {
     fetchTeams();
   }, []);
@@ -49,6 +52,8 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
         team_id: '',
       });
     }
+    setConfirmPassword('');
+    setErrorMsg('');
   }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -58,6 +63,12 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
+
+    if (!user && formData.password !== confirmPassword) {
+      setErrorMsg('Passwords do not match');
+      return;
+    }
     if (user) {
       await updateUser(user.id, formData);
     } else {
@@ -69,6 +80,11 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={user ? 'Edit User' : 'Add User'}>
       <form onSubmit={handleSubmit}>
+        {errorMsg && (
+          <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded mb-4">
+            {errorMsg}
+          </div>
+        )}
         <div className="form-group">
           <label className="form-label">Full Name</label>
           <input
@@ -144,6 +160,20 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
             required={!user}
           />
         </div>
+
+        {!user && (
+          <div className="form-group">
+            <label className="form-label">Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              className="form-input"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+        )}
 
         <div className="form-group">
           <label className="form-label">Team</label>
