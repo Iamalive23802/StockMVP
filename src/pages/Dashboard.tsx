@@ -43,22 +43,24 @@ const Dashboard = () => {
     ? Math.round((filteredLeads.filter(l => l.status === 'Won').length / filteredLeads.length) * 100)
     : 0;
 
-  const teamPerformance = teams.map(team => {
-    const teamLeads = filteredLeads.filter(l => l.team_id === team.id);
-    const won = teamLeads.filter(l => l.status === 'Won').length;
-    const percent = teamLeads.length ? Math.round((won / teamLeads.length) * 100) : 0;
-
+  const teamsWithClientCounts = teams.map(team => {
+    const clients = leads.filter(l => l.team_id === team.id && l.status === 'Won').length;
     return {
       name: team.name,
-      percent,
-      wins: won,
+      clients,
       avatarColor: ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-yellow-500'][Math.floor(Math.random() * 4)],
     };
   });
 
-  const topTeams = [...teamPerformance]
-    .sort((a, b) => b.wins - a.wins)
-    .slice(0, 5);
+  const maxClients = Math.max(...teamsWithClientCounts.map(t => t.clients), 0);
+
+  const topTeams = teamsWithClientCounts
+    .sort((a, b) => b.clients - a.clients)
+    .slice(0, 5)
+    .map(team => ({
+      ...team,
+      percent: maxClients ? Math.round((team.clients / maxClients) * 100) : 0,
+    }));
 
   const rmSales = users
     .filter(u => u.role === 'relationship_mgr')
@@ -109,7 +111,7 @@ const Dashboard = () => {
                     </div>
                     <span>{team.name}</span>
                   </div>
-                  <span className="text-sm text-gray-400">{team.wins} wins</span>
+                  <span className="text-sm text-gray-400">{team.clients} clients</span>
                 </div>
                 <div className="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
                   <div
