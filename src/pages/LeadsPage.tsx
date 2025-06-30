@@ -155,6 +155,8 @@ function LeadsPage() {
   };
 
   const filteredLeads = leads.filter((lead) => {
+  // Hide leads that have been converted to clients
+  if (lead.status === 'Won') return false;
   if (role === 'relationship_mgr' && lead.assigned_to !== userId) return false;
   if (role === 'team_leader' && lead.team_id !== users.find(u => u.id === userId)?.team_id) return false;
   if (statusFilter === 'assigned' && !lead.assigned_to) return false;
