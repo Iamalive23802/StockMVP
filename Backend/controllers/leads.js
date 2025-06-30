@@ -210,12 +210,19 @@ const assignLead = async (req, res) => {
   }
 
   try {
+    const userRes = await pool.query(
+      'SELECT team_id FROM users WHERE id = $1',
+      [assigned_to]
+    );
+    const userTeamId = userRes.rows[0]?.team_id || null;
+
     const result = await pool.query(
       `UPDATE leads
-       SET assigned_to = $1
-       WHERE id = $2
+       SET assigned_to = $1,
+           team_id = COALESCE(team_id, $2)
+       WHERE id = $3
        RETURNING *`,
-      [assigned_to, id]
+      [assigned_to, userTeamId, id]
     );
 
     if (result.rows.length === 0) {
