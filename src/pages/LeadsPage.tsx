@@ -8,7 +8,6 @@ import LeadModal from '../components/modals/LeadModal';
 import UploadLeadsModal from '../components/modals/UploadLeadsModal';
 import AssignLeadModal from '../components/modals/AssignLeadModal';
 import Modal from '../components/modals/Modal';
-import LeadProgressModal from '../components/modals/LeadProgressModal';
 import ConfirmModal from '../components/modals/ConfirmModal';
 import { useToastStore } from '../stores/toastStore';
 import type { Lead } from '../stores/leadStore';
@@ -26,7 +25,6 @@ function LeadsPage() {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [currentLead, setCurrentLead] = useState<Lead | null>(null);
   const [infoLead, setInfoLead] = useState<Lead | null>(null);
-  const [progressLead, setProgressLead] = useState<Lead | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [statusColumnFilter, setStatusColumnFilter] = useState('');
   const [showStatusFilter, setShowStatusFilter] = useState(false);
@@ -345,22 +343,12 @@ function LeadsPage() {
                     >
                       ℹ️
                     </button>
-                    {role === 'relationship_mgr' ? (
-                      <button
-                        onClick={() => lead.status !== 'Won' && setProgressLead(lead)}
-                        className={`text-blue-400 hover:text-blue-300 ${lead.status === 'Won' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        disabled={lead.status === 'Won'}
-                      >
-                        <Pencil size={16} />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleEditLead(lead)}
-                        className="text-blue-400 hover:text-blue-300"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleEditLead(lead)}
+                      className="text-blue-400 hover:text-blue-300"
+                    >
+                      <Pencil size={16} />
+                    </button>
                     {(role === 'super_admin' || role === 'admin') && (
                       <button
                         onClick={() => handleDeleteLead(lead.id)}
@@ -410,9 +398,6 @@ function LeadsPage() {
 
       {isLeadModalOpen && (
         <LeadModal isOpen={isLeadModalOpen} onClose={() => setIsLeadModalOpen(false)} lead={currentLead} />
-      )}
-      {progressLead && role === 'relationship_mgr' && (
-        <LeadProgressModal isOpen={true} onClose={() => setProgressLead(null)} lead={progressLead} />
       )}
       {isUploadModalOpen && (
         <UploadLeadsModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
