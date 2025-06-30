@@ -147,6 +147,8 @@ const updateLead = async (req, res) => {
 
   const safeTeamId = team_id && team_id.trim() !== '' ? team_id : null;
   const safeAssignedTo = assigned_to && assigned_to.trim() !== '' ? assigned_to : null;
+  const safeDob = dob && dob.trim() !== '' ? dob : null;
+  const safeAge = age && age !== '' ? age : null;
 
   try {
     const result = await pool.query(
@@ -183,8 +185,8 @@ const updateLead = async (req, res) => {
         capital || '',
         segment || '',
         gender || '',
-        dob || '',
-        age || '',
+        safeDob,
+        safeAge,
         panCardNumber || '',
         aadharCardNumber || '',
         paymentHistory || '',
