@@ -14,7 +14,9 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     gender: '',
     dob: '',
     panCardNumber: '',
-    aadharCardNumber: ''
+    aadharCardNumber: '',
+    notes: '',
+    wonOn: ''
   });
 
   const [paymentHistory, setPaymentHistory] = useState<
@@ -23,11 +25,22 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
 
   useEffect(() => {
     if (lead) {
+      const parseWon = () => {
+        if (lead.wonOn) return lead.wonOn;
+        if (!lead.notes) return '';
+        const entries = lead.notes.split('|||').map(e => e.split('__'));
+        for (let i = entries.length - 1; i >= 0; i--) {
+          if (entries[i][1] === 'Won' && entries[i][2]) return entries[i][2].split('T')[0];
+        }
+        return '';
+      };
       setFormData({
         gender: lead.gender || '',
         dob: lead.dob || '',
         panCardNumber: lead.panCardNumber || '',
-        aadharCardNumber: lead.aadharCardNumber || ''
+        aadharCardNumber: lead.aadharCardNumber || '',
+        notes: lead.notes || '',
+        wonOn: parseWon()
       });
 
       const history = lead.paymentHistory
@@ -45,7 +58,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
   }, [lead]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -84,6 +97,8 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
       age: calculateAge(formData.dob),
       panCardNumber: formData.panCardNumber,
       aadharCardNumber: formData.aadharCardNumber,
+      notes: formData.notes,
+      wonOn: formData.wonOn,
       paymentHistory: historyStr
     });
     onClose();
@@ -112,6 +127,14 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
         <div className="form-group">
           <label className="form-label">Aadhar Card Number</label>
           <input type="text" name="aadharCardNumber" className="form-input" value={formData.aadharCardNumber} onChange={handleChange} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Notes</label>
+          <textarea name="notes" className="form-input" rows={3} value={formData.notes} onChange={handleChange} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Won On</label>
+          <input type="date" name="wonOn" className="form-input" value={formData.wonOn} onChange={handleChange} />
         </div>
         <div className="form-group">
           <div className="flex justify-between items-center mb-2">
