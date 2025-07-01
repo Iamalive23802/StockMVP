@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import { useToastStore } from './toastStore';
+import { useAuthStore } from './authStore';
 
 export interface Lead {
   id: string;
@@ -42,7 +43,10 @@ export const useLeadStore = create<LeadStore>((set) => ({
   fetchLeads: async () => {
     set({ loading: true });
     try {
-      const { data } = await axios.get('/api/leads');
+      const { role, userId } = useAuthStore.getState();
+      const { data } = await axios.get('/api/leads', {
+        params: { role, user_id: userId }
+      });
       const mapped = data.map((lead: any) => ({
         ...lead,
         fullName: lead.full_name,
