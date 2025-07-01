@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Pencil, Trash2, Plus, Upload, UserPlus2 } from 'lucide-react';
+import { Pencil, Trash2, Plus, Upload, UserPlus2, Copy } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useLeadStore } from '../stores/leadStore';
 import { useTeamStore } from '../stores/teamStore';
@@ -328,7 +328,21 @@ function LeadsPage() {
                     />
                   </td>
                   <td className="p-3 truncate">{lead.fullName}</td>
-                  <td className="p-3 truncate">{lead.phone}</td>
+                  <td className="p-3 truncate flex items-center gap-1">
+                    {role === 'relationship_mgr'
+                      ? `${lead.phone.slice(0, 2)}******`
+                      : lead.phone}
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(lead.phone);
+                        addToast('Phone number copied', 'success');
+                      }}
+                      className="text-gray-400 hover:text-gray-200"
+                      title="Copy Phone"
+                    >
+                      <Copy size={14} />
+                    </button>
+                  </td>
                   <td className="p-3 truncate">{lead.email}</td>
                   <td className="p-3">
                     <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(lead.status)}`}>
