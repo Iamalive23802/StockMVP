@@ -31,7 +31,7 @@ const Dashboard = () => {
   const totalLeads = filteredLeads.length;
   const totalTeams = teams.length;
 
-  const paidClients = filteredLeads.filter(l => l.status === 'Won' && l.paymentHistory && l.paymentHistory.trim() !== '').length;
+  const paidClients = filteredLeads.filter(l => l.status === 'Won').length;
   const totalSales = filteredLeads.reduce((sum, lead) => {
     if (lead.status === 'Won' && lead.paymentHistory) {
       return sum + lead.paymentHistory.split('|||').reduce((s, ph) => s + parseFloat(ph.split('__')[0] || '0'), 0);
