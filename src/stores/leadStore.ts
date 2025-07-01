@@ -15,6 +15,7 @@ export interface Lead {
   stateName: string;
   capital: string;
   segment: string;
+  wonOn?: string;
   gender?: string;
   dob?: string;
   age?: string;
@@ -56,6 +57,7 @@ export const useLeadStore = create<LeadStore>((set) => ({
         stateName: lead.state_name,
         capital: lead.capital,
         segment: lead.segment,
+        wonOn: lead.won_on,
         gender: lead.gender,
         dob: lead.dob,
         age: lead.age,

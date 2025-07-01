@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Info } from 'lucide-react';
+import { Info, Pencil } from 'lucide-react';
 import { useLeadStore, Lead } from '../stores/leadStore';
 import { useAuthStore } from '../stores/authStore';
 import ClientDetailsModal from '../components/modals/ClientDetailsModal';
+import Modal from '../components/modals/Modal';
 
 const ClientsPage = () => {
   const { leads, fetchLeads } = useLeadStore();
   const { role, userId } = useAuthStore();
   const [editLead, setEditLead] = useState<Lead | null>(null);
+  const [infoLead, setInfoLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     fetchLeads();
@@ -20,6 +22,16 @@ const ClientsPage = () => {
     }
     return true;
   });
+
+  const getWonDate = (lead: Lead) => {
+    if (lead.wonOn) return lead.wonOn;
+    if (!lead.notes) return '';
+    const entries = lead.notes.split('|||').map((e) => e.split('__'));
+    for (let i = entries.length - 1; i >= 0; i--) {
+      if (entries[i][1] === 'Won' && entries[i][2]) return entries[i][2];
+    }
+    return '';
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -53,13 +65,20 @@ const ClientsPage = () => {
                     <td className="p-3">{lead.email}</td>
                     <td className="p-3">{lead.phone || '—'}</td>
                     <td className="p-3">{payments}</td>
-                    <td className="p-3">
+                    <td className="p-3 flex gap-2">
+                      <button
+                        onClick={() => setInfoLead(lead)}
+                        className="text-blue-400 hover:text-blue-300"
+                        title="View Client Details"
+                      >
+                        <Info size={16} />
+                      </button>
                       <button
                         onClick={() => setEditLead(lead)}
                         className="text-blue-400 hover:text-blue-300"
-                        title="View/Edit Client Details"
+                        title="Edit Client"
                       >
-                        <Info size={16} />
+                        <Pencil size={16} />
                       </button>
                     </td>
                   </tr>
@@ -68,6 +87,21 @@ const ClientsPage = () => {
             </tbody>
           </table>
         </div>
+      )}
+      {infoLead && (
+        <Modal isOpen={true} onClose={() => setInfoLead(null)} title="Client Information">
+          <div className="space-y-2 text-gray-200">
+            <p><strong>Full Name:</strong> {infoLead.fullName}</p>
+            <p><strong>Email:</strong> {infoLead.email}</p>
+            <p><strong>Phone:</strong> {infoLead.phone || '—'}</p>
+            <p><strong>Notes:</strong> {infoLead.notes || '—'}</p>
+            <p><strong>Won On:</strong> {getWonDate(infoLead) ? new Date(getWonDate(infoLead)).toLocaleDateString() : '—'}</p>
+            <p><strong>Gender:</strong> {infoLead.gender || '—'}</p>
+            <p><strong>DOB:</strong> {infoLead.dob || '—'}</p>
+            <p><strong>PAN Card No:</strong> {infoLead.panCardNumber || '—'}</p>
+            <p><strong>Aadhar Card No:</strong> {infoLead.aadharCardNumber || '—'}</p>
+          </div>
+        </Modal>
       )}
       {editLead && (
         <ClientDetailsModal
