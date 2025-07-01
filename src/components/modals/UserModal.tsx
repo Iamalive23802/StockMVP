@@ -10,8 +10,10 @@ interface UserModalProps {
 }
 
 const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
-  const { addUser, updateUser } = useUserStore();
+  const { addUser, updateUser, users } = useUserStore();
   const { teams, fetchTeams } = useTeamStore();
+
+  const normalizePhone = (p: string) => (p || '').replace(/\D/g, '').trim();
 
   const [formData, setFormData] = useState<Omit<User, 'id'> & { password: string }>({
     displayName: '',
@@ -69,12 +71,27 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
       setErrorMsg('Passwords do not match');
       return;
     }
-    if (user) {
-      await updateUser(user.id, formData);
-    } else {
-      await addUser(formData);
+
+    const phoneNorm = normalizePhone(formData.phoneNumber);
+    const duplicate = users.some(
+      (u) => normalizePhone(u.phoneNumber) === phoneNorm && (!user || u.id !== user.id)
+    );
+    if (duplicate) {
+      setErrorMsg('A user with this phone number already exists');
+      return;
     }
-    onClose();
+
+    try {
+      if (user) {
+        await updateUser(user.id, { ...formData, phoneNumber: phoneNorm });
+      } else {
+        await addUser({ ...formData, phoneNumber: phoneNorm });
+      }
+      onClose();
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to save user';
+      setErrorMsg(msg);
+    }
   };
 
   return (
