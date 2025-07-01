@@ -261,9 +261,9 @@ function LeadsPage() {
       )}
 
       <div className="bg-gray-800 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[60vh]">
           <table className="table-fixed w-full text-sm text-left text-gray-300">
-            <thead className="bg-gray-700 text-gray-400 uppercase text-xs">
+            <thead className="bg-gray-700 text-gray-400 uppercase text-xs sticky top-0">
               <tr>
                 <th className="w-10 p-3">
                   <input

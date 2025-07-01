@@ -88,9 +88,9 @@ function UsersPage() {
         )}
       </div>
 
-      <div className="overflow-hidden border border-gray-700 rounded-lg">
+      <div className="overflow-x-auto max-h-[60vh] border border-gray-700 rounded-lg">
         <table className="min-w-full text-sm text-left text-gray-300">
-          <thead className="bg-gray-700 uppercase text-xs text-gray-400">
+          <thead className="bg-gray-700 uppercase text-xs text-gray-400 sticky top-0">
             <tr>
               <th className="p-3">Name</th>
               <th className="p-3">Email</th>
