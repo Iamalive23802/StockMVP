@@ -57,7 +57,7 @@ function TeamsPage() {
       </div>
 
       <div className="bg-gray-800 rounded-lg overflow-hidden">
-        <div className="table-container max-h-[60vh] overflow-y-auto">
+        <div className="table-container max-h-[80vh] overflow-y-auto">
           <table className="data-table">
             <thead className="bg-gray-700 sticky top-0">
               <tr>

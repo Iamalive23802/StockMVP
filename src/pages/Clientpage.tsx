@@ -40,7 +40,7 @@ const ClientsPage = () => {
       {wonLeads.length === 0 ? (
         <p className="text-gray-400">No leads have been marked as "Won" yet.</p>
       ) : (
-        <div className="overflow-x-auto bg-gray-800 rounded-lg border border-gray-700 max-h-[60vh]">
+        <div className="overflow-x-auto bg-gray-800 rounded-lg border border-gray-700 max-h-[80vh]">
           <table className="min-w-full text-sm text-left text-gray-300">
             <thead className="bg-gray-700 text-xs uppercase text-gray-400 sticky top-0">
               <tr>
