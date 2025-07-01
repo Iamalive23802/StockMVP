@@ -23,15 +23,6 @@ const getLeads = async (req, res) => {
          ORDER BY l.date DESC`,
         [user_id]
       );
-    } else if (role === 'team_leader') {
-      result = await pool.query(
-        `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role
-         FROM leads l
-         LEFT JOIN users u ON l.assigned_to = u.id
-         WHERE l.team_id = (SELECT team_id FROM users WHERE id = $1)
-         ORDER BY l.date DESC`,
-        [user_id]
-      );
     } else if (role === 'admin') {
       result = await pool.query(
         `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role
