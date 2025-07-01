@@ -6,14 +6,20 @@ import ClientDetailsModal from '../components/modals/ClientDetailsModal';
 
 const ClientsPage = () => {
   const { leads, fetchLeads } = useLeadStore();
-  const { role } = useAuthStore();
+  const { role, userId } = useAuthStore();
   const [editLead, setEditLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     fetchLeads();
   }, []);
 
-  const wonLeads = leads.filter((lead) => lead.status === 'Won');
+  const wonLeads = leads.filter((lead) => {
+    if (lead.status !== 'Won') return false;
+    if (role === 'relationship_mgr') {
+      return lead.assigned_to === userId;
+    }
+    return true;
+  });
 
   return (
     <div className="container mx-auto px-4 py-6">
