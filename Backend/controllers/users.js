@@ -1,5 +1,7 @@
 const pool = require('../db');
 
+const normalizePhone = (p) => (p || '').replace(/\D/g, '').trim();
+
 const getAllUsers = async (req, res) => {
   try {
     const result = await pool.query(`
@@ -26,12 +28,21 @@ const addUser = async (req, res) => {
   } = req.body;
 
   try {
+    const phoneNorm = normalizePhone(phoneNumber);
+    const existing = await pool.query(
+      'SELECT id FROM users WHERE phone_number = $1',
+      [phoneNorm]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'User with this phone number already exists' });
+    }
+
     const result = await pool.query(
-      `INSERT INTO users 
+      `INSERT INTO users
         (display_name, email, phone_number, password, role, status, team_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [displayName, email, phoneNumber, password, role, status, team_id]
+      [displayName, email, phoneNorm, password, role, status, team_id]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -52,8 +63,17 @@ const updateUser = async (req, res) => {
   } = req.body;
 
   try {
+    const phoneNorm = normalizePhone(phoneNumber);
+    const existing = await pool.query(
+      'SELECT id FROM users WHERE phone_number = $1 AND id <> $2',
+      [phoneNorm, id]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'User with this phone number already exists' });
+    }
+
     const result = await pool.query(
-      `UPDATE users SET 
+      `UPDATE users SET
         display_name = $1,
         email = $2,
         phone_number = $3,
@@ -62,7 +82,7 @@ const updateUser = async (req, res) => {
         status = $6,
         team_id = $7
        WHERE id = $8 RETURNING *`,
-      [displayName, email, phoneNumber, password, role, status, team_id, id]
+      [displayName, email, phoneNorm, password, role, status, team_id, id]
     );
     res.json(result.rows[0]);
   } catch (err) {

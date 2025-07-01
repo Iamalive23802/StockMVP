@@ -49,9 +49,11 @@ export const useUserStore = create<UserStore>((set) => ({
       await axios.post('/api/users', user);
       await useUserStore.getState().fetchUsers();
       addToast('User added successfully', 'success');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to add user:', err);
-      addToast('Failed to add user', 'error');
+      const msg = err?.response?.data?.error || 'Failed to add user';
+      addToast(msg, 'error');
+      throw new Error(msg);
     }
   },
 
@@ -61,9 +63,11 @@ export const useUserStore = create<UserStore>((set) => ({
       await axios.put(`/api/users/${id}`, user);
       await useUserStore.getState().fetchUsers();
       addToast('User updated successfully', 'success');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to update user:', err);
-      addToast('Failed to update user', 'error');
+      const msg = err?.response?.data?.error || 'Failed to update user';
+      addToast(msg, 'error');
+      throw new Error(msg);
     }
   },
 
