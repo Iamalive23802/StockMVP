@@ -43,7 +43,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <div
         ref={modalRef}
-        className="bg-gray-800 rounded-lg shadow-lg w-full max-w-lg mx-4 overflow-hidden transform transition-all animate-fade-in"
+        className="bg-gray-800 rounded-lg shadow-lg w-full max-w-lg mx-4 overflow-hidden transform transition-all animate-fade-in max-h-[90vh] flex flex-col"
       >
         <div className="flex justify-between items-center px-6 py-4 border-b border-gray-700">
           <h3 className="text-lg font-medium">{title}</h3>
@@ -54,7 +54,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
             <X size={20} />
           </button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );
