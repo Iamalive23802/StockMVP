@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pencil } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useLeadStore, Lead } from '../stores/leadStore';
 import { useAuthStore } from '../stores/authStore';
 import ClientDetailsModal from '../components/modals/ClientDetailsModal';
@@ -35,55 +35,33 @@ const ClientsPage = () => {
                 <th className="p-3">Full Name</th>
                 <th className="p-3">Email</th>
                 <th className="p-3">Phone</th>
-                <th className="p-3">Notes</th>
-                <th className="p-3">Won On</th>
-                <th className="p-3">Gender</th>
-                <th className="p-3">DOB</th>
-                <th className="p-3">PAN</th>
-                <th className="p-3">Aadhar</th>
                 <th className="p-3">Payment History</th>
-                {role === 'relationship_mgr' && <th className="p-3">Actions</th>}
+                <th className="p-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
               {wonLeads.map((lead) => {
-                const lastUpdate = lead.notes?.split('|||').pop()?.split('__');
+                const payments = lead.paymentHistory
+                  ? lead.paymentHistory.split('|||').reduce((sum, ph) => {
+                      const [amount] = ph.split('__');
+                      return sum + Number(amount || 0);
+                    }, 0)
+                  : 0;
                 return (
                   <tr key={lead.id} className="hover:bg-gray-700">
                     <td className="p-3 font-medium text-blue-300">{lead.fullName}</td>
                     <td className="p-3">{lead.email}</td>
                     <td className="p-3">{lead.phone || '—'}</td>
-                    <td className="p-3">{lastUpdate?.[0] || '—'}</td>
-                    <td className="p-3 text-gray-400">
-                      {lastUpdate?.[2] ? new Date(lastUpdate[2]).toLocaleString() : '—'}
-                    </td>
-                    <td className="p-3">{lead.gender || '—'}</td>
-                    <td className="p-3">{lead.dob || '—'}</td>
-                    <td className="p-3">{lead.panCardNumber || '—'}</td>
-                    <td className="p-3">{lead.aadharCardNumber || '—'}</td>
+                    <td className="p-3">{payments}</td>
                     <td className="p-3">
-                      {lead.paymentHistory
-                        ? lead.paymentHistory.split('|||').map((ph, idx) => {
-                            const [amount, date] = ph.split('__');
-                            return (
-                              <div key={idx}>
-                                {new Date(date).toLocaleDateString()} - {amount}
-                              </div>
-                            );
-                          })
-                        : '—'}
+                      <button
+                        onClick={() => setEditLead(lead)}
+                        className="text-blue-400 hover:text-blue-300"
+                        title="View/Edit Client Details"
+                      >
+                        <Info size={16} />
+                      </button>
                     </td>
-                    {role === 'relationship_mgr' && (
-                      <td className="p-3">
-                        <button
-                          onClick={() => setEditLead(lead)}
-                          className="text-blue-400 hover:text-blue-300"
-                          title="Edit Client Details"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                      </td>
-                    )}
                   </tr>
                 );
               })}
