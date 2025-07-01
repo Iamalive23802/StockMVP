@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
+import ConfirmModal from './ConfirmModal';
 import { useLeadStore } from '../../stores/leadStore';
 import { useTeamStore } from '../../stores/teamStore';
 import { useUserStore } from '../../stores/userStore';
@@ -19,6 +20,8 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
   const { users, fetchUsers } = useUserStore();
   const { role, userId } = useAuthStore();
   const addToast = useToastStore((state) => state.addToast);
+
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [formData, setFormData] = useState<Omit<Lead, 'id'>>({
     fullName: '',
@@ -81,14 +84,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!lead && formData.phone && leads.some(l => l.phone === formData.phone)) {
-      addToast('A lead with this phone number already exists!', 'error');
-      return;
-    }
-
+  const submitLead = async () => {
     let finalData = {
       ...formData,
       status: formData.status as Lead['status'],
@@ -114,7 +110,24 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     onClose();
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!lead && formData.phone && leads.some(l => l.phone === formData.phone)) {
+      addToast('A lead with this phone number already exists!', 'error');
+      return;
+    }
+
+    if (lead?.status !== 'Won' && formData.status === 'Won') {
+      setShowConfirm(true);
+      return;
+    }
+
+    await submitLead();
+  };
+
   return (
+    <>
     <Modal isOpen={isOpen} onClose={onClose} title={lead ? 'Edit Lead' : 'Add Lead'}>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -297,6 +310,15 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
         </div>
       </form>
     </Modal>
+    {showConfirm && (
+      <ConfirmModal
+        isOpen={true}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={submitLead}
+        message="Marking this lead as Won will convert it to a client and cannot be undone. Continue?"
+      />
+    )}
+    </>
   );
 };
 
