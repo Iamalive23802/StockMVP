@@ -105,7 +105,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Client Details - ${lead.fullName}`}>\
+    <Modal isOpen={isOpen} onClose={onClose} title={`Client Details - ${lead.fullName}`}>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label">Gender</label>

@@ -25,7 +25,7 @@ function Sidebar() {
       label: 'Dashboard',
       path: '/',
       icon: <LayoutDashboard size={18} className="mr-2" />,
-      roles: ['super_admin', 'admin'],
+      roles: ['super_admin', 'admin', 'team_leader'],
     },
     {
       label: 'Users',
