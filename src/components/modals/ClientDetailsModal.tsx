@@ -80,7 +80,13 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
   const addPaymentRow = () => {
     const now = new Date().toISOString();
     setPaymentHistory([
-      { amount: '', date: now, utr: '', approved: false },
+      {
+        amount: '',
+        date: now,
+        utr: '',
+        approved: true, // mark as approved until saved
+        isNew: true,
+      },
       ...paymentHistory,
     ]);
   };
@@ -88,7 +94,18 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const reversed = [...paymentHistory].reverse();
+    // Entries added locally should only trigger approval after saving.
+    // Remove empty new rows and mark new entries as not approved before sending.
+    const cleaned = paymentHistory
+      .filter((entry) => !(entry.isNew && entry.amount.trim() === ''))
+      .map((entry) => {
+        if (entry.isNew) {
+          return { ...entry, approved: false };
+        }
+        return entry;
+      });
+
+    const reversed = [...cleaned].reverse();
     const historyStr = serializePaymentHistory(reversed);
 
     await updateLead(lead.id, {
