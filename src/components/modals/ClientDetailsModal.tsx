@@ -80,7 +80,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
   const addPaymentRow = () => {
     const now = new Date().toISOString();
     setPaymentHistory([
-      { amount: '', date: now, utr: '', approved: false },
+      { amount: '', date: now, utr: '', approved: false, isNew: true },
       ...paymentHistory,
     ]);
   };
@@ -89,7 +89,9 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     e.preventDefault();
 
     const reversed = [...paymentHistory].reverse();
-    const historyStr = serializePaymentHistory(reversed);
+    const historyStr = serializePaymentHistory(
+      reversed.map(({ isNew, ...rest }) => rest),
+    );
 
     await updateLead(lead.id, {
       ...lead,
@@ -183,6 +185,8 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                       )
                     ) : entry.approved ? (
                       entry.utr || '—'
+                    ) : entry.isNew ? (
+                      '—'
                     ) : (
                       <div className="flex items-center gap-2 text-yellow-400">
                         <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
