@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
-type Role = 'super_admin' | 'admin' | 'team_leader' | 'relationship_mgr' | '';
+type Role =
+  | 'super_admin'
+  | 'admin'
+  | 'team_leader'
+  | 'relationship_mgr'
+  | 'financial_manager'
+  | '';
 
 interface AuthState {
   isAuthenticated: boolean;

@@ -62,7 +62,7 @@ function App() {
         <Route
           path="leads"
           element={
-            <ProtectedRoute allowedRoles={['super_admin', 'admin', 'team_leader', 'relationship_mgr']}>
+            <ProtectedRoute allowedRoles={['super_admin', 'admin', 'team_leader', 'relationship_mgr', 'financial_manager']}>
               <LeadsPage />
             </ProtectedRoute>
           }
@@ -86,7 +86,7 @@ function App() {
         <Route
           path="clients"
           element={
-            <ProtectedRoute allowedRoles={['super_admin', 'admin', 'team_leader', 'relationship_mgr']}>
+            <ProtectedRoute allowedRoles={['super_admin', 'admin', 'team_leader', 'relationship_mgr', 'financial_manager']}>
               <ClientsPage />
             </ProtectedRoute>
           }

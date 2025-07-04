@@ -155,7 +155,11 @@ function LeadsPage() {
   const filteredLeads = leads.filter((lead) => {
   // Hide leads that have been converted to clients
   if (lead.status === 'Won') return false;
-  if (role === 'relationship_mgr' && lead.assigned_to !== userId) return false;
+  if (
+    (role === 'relationship_mgr' || role === 'financial_manager') &&
+    lead.assigned_to !== userId
+  )
+    return false;
   if (role === 'team_leader' && lead.team_id !== users.find(u => u.id === userId)?.team_id) return false;
   if (statusFilter === 'assigned' && !lead.assigned_to) return false;
   if (statusFilter === 'unassigned' && lead.assigned_to) return false;
@@ -165,7 +169,8 @@ function LeadsPage() {
 
   const availableUsers = users.filter(user => {
     if (role === 'super_admin') return user.role === 'admin';
-    if (role === 'admin') return user.role === 'relationship_mgr';
+    if (role === 'admin')
+      return user.role === 'relationship_mgr' || user.role === 'financial_manager';
     return false;
   });
 
@@ -173,7 +178,7 @@ function LeadsPage() {
     <div className="container mx-auto px-4" onMouseUp={handleMouseUp}>
       <div className="flex justify-between items-center mb-6">
   <h1 className="text-2xl font-bold">All Leads</h1>
-  {(role === 'super_admin' || role === 'admin' || role === 'relationship_mgr') && (
+  {(role === 'super_admin' || role === 'admin' || role === 'relationship_mgr' || role === 'financial_manager') && (
     <div className="flex space-x-3">
       <button
         className="btn btn-primary flex items-center"
@@ -238,7 +243,11 @@ function LeadsPage() {
           >
             <option value="">Select</option>
             {users
-              .filter((user) => user.role === 'relationship_mgr' && user.team_id === selectedTeam)
+              .filter(
+                (user) =>
+                  (user.role === 'relationship_mgr' || user.role === 'financial_manager') &&
+                  user.team_id === selectedTeam
+              )
               .map((rm) => (
                 <option key={rm.id} value={rm.id}>
                   {rm.displayName}
@@ -329,7 +338,7 @@ function LeadsPage() {
                   </td>
                   <td className="p-3 truncate">{lead.fullName}</td>
                   <td className="p-3 truncate flex items-center gap-1">
-                    {role === 'relationship_mgr'
+                    {role === 'relationship_mgr' || role === 'financial_manager'
                       ? `${lead.phone.slice(0, 2)}******`
                       : lead.phone}
                     <button

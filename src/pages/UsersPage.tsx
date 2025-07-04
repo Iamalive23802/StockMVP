@@ -68,6 +68,8 @@ function UsersPage() {
         return 'bg-green-500/20 text-green-400';
       case 'relationship_mgr':
         return 'bg-yellow-500/20 text-yellow-400';
+      case 'financial_manager':
+        return 'bg-yellow-500/20 text-yellow-400';
       default:
         return 'bg-gray-500/20 text-gray-400';
     }

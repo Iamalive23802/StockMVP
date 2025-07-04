@@ -150,6 +150,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
             <option value="admin">Admin</option>
             <option value="team_leader">Team Leader</option>
             <option value="relationship_mgr">Relationship Manager</option>
+            <option value="financial_manager">Financial Manager</option>
           </select>
         </div>
 
