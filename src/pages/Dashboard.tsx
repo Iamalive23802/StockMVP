@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
 import { useLeadStore } from '../stores/leadStore';
 import { useTeamStore } from '../stores/teamStore';
+import { parsePaymentHistory } from '../utils/paymentHistory';
 
 const Dashboard = () => {
   const { role, userId } = useAuthStore();
@@ -34,7 +35,12 @@ const Dashboard = () => {
   const paidClients = filteredLeads.filter(l => l.status === 'Won').length;
   const totalSales = filteredLeads.reduce((sum, lead) => {
     if (lead.status === 'Won' && lead.paymentHistory) {
-      return sum + lead.paymentHistory.split('|||').reduce((s, ph) => s + parseFloat(ph.split('__')[0] || '0'), 0);
+      return (
+        sum +
+        parsePaymentHistory(lead.paymentHistory)
+          .filter(p => p.status !== 'pending')
+          .reduce((s, p) => s + parseFloat(p.amount || '0'), 0)
+      );
     }
     return sum;
   }, 0);
@@ -72,7 +78,12 @@ const Dashboard = () => {
       const rmLeads = filteredLeads.filter(l => l.assigned_to === rm.id && l.status === 'Won');
       const sales = rmLeads.reduce((sum, lead) => {
         if (lead.paymentHistory) {
-          return sum + lead.paymentHistory.split('|||').reduce((s, ph) => s + parseFloat(ph.split('__')[0] || '0'), 0);
+          return (
+            sum +
+            parsePaymentHistory(lead.paymentHistory)
+              .filter(p => p.status !== 'pending')
+              .reduce((s, p) => s + parseFloat(p.amount || '0'), 0)
+          );
         }
         return sum;
       }, 0);
