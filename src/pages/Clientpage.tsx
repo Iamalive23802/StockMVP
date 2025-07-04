@@ -17,7 +17,7 @@ const ClientsPage = () => {
 
   const wonLeads = leads.filter((lead) => {
     if (lead.status !== 'Won') return false;
-    if (role === 'relationship_mgr' || role === 'financial_manager') {
+    if (role === 'relationship_mgr') {
       return lead.assigned_to === userId;
     }
     return true;

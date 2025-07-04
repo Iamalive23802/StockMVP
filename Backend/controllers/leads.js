@@ -14,7 +14,7 @@ const getLeads = async (req, res) => {
   try {
     let result;
 
-    if (role === 'relationship_mgr' || role === 'financial_manager') {
+    if (role === 'relationship_mgr') {
       result = await pool.query(
         `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role
          FROM leads l
@@ -22,6 +22,13 @@ const getLeads = async (req, res) => {
          WHERE l.assigned_to = $1
          ORDER BY l.date DESC`,
         [user_id]
+      );
+    } else if (role === 'financial_manager') {
+      result = await pool.query(
+        `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role
+         FROM leads l
+         LEFT JOIN users u ON l.assigned_to = u.id
+         ORDER BY l.date DESC`
       );
     } else if (role === 'team_leader') {
       const teamRes = await pool.query(
