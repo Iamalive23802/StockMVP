@@ -3,6 +3,11 @@ export interface PaymentEntry {
   date: string;
   utr: string;
   approved: boolean;
+  /**
+   * Indicates the payment row has been added locally and not yet saved.
+   * This flag is ignored when serializing and will not be sent to the server.
+   */
+  isNew?: boolean;
 }
 
 export function parsePaymentHistory(str?: string): PaymentEntry[] {
