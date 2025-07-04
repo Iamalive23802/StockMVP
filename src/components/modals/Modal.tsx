@@ -18,21 +18,13 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
       }
     };
 
-    const handleClickOutside = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      document.addEventListener('mousedown', handleClickOutside);
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.removeEventListener('mousedown', handleClickOutside);
       document.body.style.overflow = 'auto';
     };
   }, [isOpen, onClose]);
@@ -40,10 +32,14 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      onClick={onClose} // ✅ backdrop click closes modal
+    >
       <div
         ref={modalRef}
         className="bg-gray-800 rounded-lg shadow-lg w-full max-w-lg mx-4 overflow-hidden transform transition-all animate-fade-in max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()} // ✅ clicking inside modal doesn't close
       >
         <div className="flex justify-between items-center px-6 py-4 border-b border-gray-700">
           <h3 className="text-lg font-medium">{title}</h3>

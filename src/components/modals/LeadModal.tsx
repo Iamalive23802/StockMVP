@@ -84,31 +84,39 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const submitLead = async () => {
-    let finalData = {
-      ...formData,
-      status: formData.status as Lead['status'],
-    };
-
-    if (role === 'relationship_mgr' || role === 'financial_manager') {
-      const user = users.find(u => u.id === userId);
-      if (user) {
-        finalData = {
-          ...finalData,
-          team_id: user.team_id || '',
-          assigned_to: userId,
-        };
-      }
-    }
-
-    if (lead) {
-      await updateLead(lead.id, finalData);
-    } else {
-      await addLead(finalData);
-    }
-
-    onClose();
+  const submitLead = async (forcedStatus?: string) => {
+  let finalData = {
+    ...formData,
+    status: (forcedStatus ?? formData.status) as Lead['status'],
   };
+
+  if (role === 'relationship_mgr') {
+    const user = users.find(u => u.id === userId);
+    if (user) {
+      finalData = {
+        ...finalData,
+        team_id: user.team_id || '',
+        assigned_to: userId,
+      };
+    }
+  }
+
+  console.log("✅ submitLead triggered", formData);
+  console.log("Final payload to update/add:", finalData);
+
+  if (lead) {
+    await updateLead(lead.id, finalData);
+  } else {
+    await addLead(finalData);
+  }
+
+  onClose();
+
+  setTimeout(() => {
+    const event = new CustomEvent('refreshLeads');
+    window.dispatchEvent(event);
+  }, 100);
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -311,13 +319,23 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
       </form>
     </Modal>
     {showConfirm && (
-      <ConfirmModal
-        isOpen={true}
-        onClose={() => setShowConfirm(false)}
-        onConfirm={submitLead}
-        message="Marking this lead as Won will convert it to a client and cannot be undone. Continue?"
-      />
-    )}
+  <ConfirmModal
+    isOpen={true}
+    onClose={() => {
+      setShowConfirm(false);
+      setFormData(prev => ({
+        ...prev,
+        status: lead?.status || 'New',
+      }));
+    }}
+    onConfirm={async () => {
+      console.log("🟡 ConfirmModal confirmed"); // ← add this
+      setShowConfirm(false);
+      await submitLead('Won'); // ← force Won status
+    }}
+    message="Marking this lead as Won will convert it to a client and cannot be undone. Continue?"
+  />
+)}
     </>
   );
 };
