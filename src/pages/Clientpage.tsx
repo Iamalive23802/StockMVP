@@ -4,6 +4,7 @@ import { useLeadStore, Lead } from '../stores/leadStore';
 import { useAuthStore } from '../stores/authStore';
 import ClientDetailsModal from '../components/modals/ClientDetailsModal';
 import Modal from '../components/modals/Modal';
+import { parsePaymentHistory } from '../utils/payment';
 
 const ClientsPage = () => {
   const { leads, fetchLeads } = useLeadStore();
@@ -54,10 +55,10 @@ const ClientsPage = () => {
             <tbody className="divide-y divide-gray-700">
               {wonLeads.map((lead) => {
                 const payments = lead.paymentHistory
-                  ? lead.paymentHistory.split('|||').reduce((sum, ph) => {
-                      const [amount] = ph.split('__');
-                      return sum + Number(amount || 0);
-                    }, 0)
+                  ? parsePaymentHistory(lead.paymentHistory).reduce(
+                      (sum, ph) => sum + (ph.approved ? Number(ph.amount || 0) : 0),
+                      0
+                    )
                   : 0;
                 return (
                   <tr key={lead.id} className="hover:bg-gray-700">

@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import { useLeadStore, Lead } from '../../stores/leadStore';
+import { useAuthStore } from '../../stores/authStore';
+import {
+  PaymentEntry,
+  parsePaymentHistory,
+  serializePaymentHistory,
+} from '../../utils/payment';
 
 interface ClientDetailsModalProps {
   isOpen: boolean;
@@ -10,6 +16,7 @@ interface ClientDetailsModalProps {
 
 const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose, lead }) => {
   const { updateLead } = useLeadStore();
+  const { role } = useAuthStore();
   const [formData, setFormData] = useState({
     gender: '',
     dob: '',
@@ -19,9 +26,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     wonOn: ''
   });
 
-  const [paymentHistory, setPaymentHistory] = useState<
-    { amount: string; date: string }[]
-  >([]);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentEntry[]>([]);
 
   useEffect(() => {
     if (lead) {
@@ -43,16 +48,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
         wonOn: parseWon()
       });
 
-      const history = lead.paymentHistory
-        ?.split('|||')
-        .map(entry => {
-          const parts = entry.split('__');
-          return {
-            amount: parts[0] || '',
-            date: parts[1] || new Date().toISOString()
-          };
-        }) || [];
-
+      const history = parsePaymentHistory(lead.paymentHistory);
       setPaymentHistory(history.reverse()); // newest first
     }
   }, [lead]);
@@ -71,24 +67,29 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000)).toString();
   };
 
-  const handlePaymentChange = (index: number, value: string) => {
+  const handlePaymentChange = (
+    index: number,
+    field: keyof PaymentEntry,
+    value: string | boolean,
+  ) => {
     const updated = [...paymentHistory];
-    updated[index].amount = value;
+    (updated[index] as any)[field] = value;
     setPaymentHistory(updated);
   };
 
   const addPaymentRow = () => {
     const now = new Date().toISOString();
-    setPaymentHistory([{ amount: '', date: now }, ...paymentHistory]);
+    setPaymentHistory([
+      { amount: '', date: now, utr: '', approved: false },
+      ...paymentHistory,
+    ]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const reversed = [...paymentHistory].reverse();
-    const historyStr = reversed
-      .map((p) => `${p.amount}__${p.date}`)
-      .join('|||');
+    const historyStr = serializePaymentHistory(reversed);
 
     await updateLead(lead.id, {
       ...lead,
@@ -152,6 +153,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
               <tr>
                 <th className="p-2">Date</th>
                 <th className="p-2">Amount</th>
+                <th className="p-2">UTR</th>
               </tr>
             </thead>
             <tbody>
@@ -163,8 +165,30 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                       type="text"
                       className="form-input"
                       value={entry.amount}
-                      onChange={(e) => handlePaymentChange(i, e.target.value)}
+                      onChange={(e) => handlePaymentChange(i, 'amount', e.target.value)}
                     />
+                  </td>
+                  <td className="p-2">
+                    {role === 'financial_manager' ? (
+                      entry.approved ? (
+                        entry.utr || '—'
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={entry.utr}
+                          onChange={(e) => handlePaymentChange(i, 'utr', e.target.value)}
+                          onBlur={() => handlePaymentChange(i, 'approved', true)}
+                        />
+                      )
+                    ) : entry.approved ? (
+                      entry.utr || '—'
+                    ) : (
+                      <div className="flex items-center gap-2 text-yellow-400">
+                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        Awaiting Approval
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
