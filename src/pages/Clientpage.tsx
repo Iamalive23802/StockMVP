@@ -21,6 +21,10 @@ const ClientsPage = () => {
     if (role === 'relationship_mgr') {
       return lead.assigned_to === userId;
     }
+    if (role === 'financial_manager') {
+      const payments = parsePaymentHistory(lead.paymentHistory);
+      return payments.some((p) => !p.approved);
+    }
     return true;
   });
 
@@ -36,10 +40,18 @@ const ClientsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h1 className="text-3xl font-bold text-white mb-6">🎉 Clients (Won Leads)</h1>
+      <h1 className="text-3xl font-bold text-white mb-6">
+        {role === 'financial_manager'
+          ? '🎉 Clients Awaiting Approval'
+          : '🎉 Clients (Won Leads)'}
+      </h1>
 
       {wonLeads.length === 0 ? (
-        <p className="text-gray-400">No leads have been marked as "Won" yet.</p>
+        <p className="text-gray-400">
+          {role === 'financial_manager'
+            ? 'No payments are awaiting approval.'
+            : 'No leads have been marked as "Won" yet.'}
+        </p>
       ) : (
         <div className="overflow-x-auto bg-gray-800 rounded-lg border border-gray-700 max-h-[80vh]">
           <table className="min-w-full text-sm text-left text-gray-300">
