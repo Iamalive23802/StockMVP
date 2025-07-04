@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import { useLeadStore, Lead } from '../../stores/leadStore';
+import { useAuthStore } from '../../stores/authStore';
 
 interface ClientDetailsModalProps {
   isOpen: boolean;
@@ -19,9 +20,14 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     wonOn: ''
   });
 
-  const [paymentHistory, setPaymentHistory] = useState<
-    { amount: string; date: string }[]
-  >([]);
+  interface PaymentEntry {
+    amount: string;
+    date: string;
+    utr: string;
+    status: 'pending' | 'approved';
+  }
+
+  const [paymentHistory, setPaymentHistory] = useState<PaymentEntry[]>([]);
 
   useEffect(() => {
     if (lead) {
@@ -43,15 +49,18 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
         wonOn: parseWon()
       });
 
-      const history = lead.paymentHistory
-        ?.split('|||')
-        .map(entry => {
-          const parts = entry.split('__');
-          return {
-            amount: parts[0] || '',
-            date: parts[1] || new Date().toISOString()
-          };
-        }) || [];
+      const history =
+        lead.paymentHistory
+          ?.split('|||')
+          .map((entry) => {
+            const parts = entry.split('__');
+            return {
+              amount: parts[0] || '',
+              date: parts[1] || new Date().toISOString(),
+              utr: parts[2] || '',
+              status: (parts[3] as 'pending' | 'approved') || 'approved',
+            } as PaymentEntry;
+          }) || [];
 
       setPaymentHistory(history.reverse()); // newest first
     }
@@ -77,9 +86,28 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     setPaymentHistory(updated);
   };
 
+  const handleUtrChange = (index: number, value: string) => {
+    const updated = [...paymentHistory];
+    updated[index].utr = value;
+    setPaymentHistory(updated);
+  };
+
+  const handleStatusChange = (index: number, value: 'pending' | 'approved') => {
+    const updated = [...paymentHistory];
+    updated[index].status = value;
+    setPaymentHistory(updated);
+  };
+
+  const { role } = useAuthStore();
+
   const addPaymentRow = () => {
     const now = new Date().toISOString();
-    setPaymentHistory([{ amount: '', date: now }, ...paymentHistory]);
+    const status: 'pending' | 'approved' =
+      role === 'financial_manager' ? 'approved' : 'pending';
+    setPaymentHistory([
+      { amount: '', date: now, utr: '', status },
+      ...paymentHistory,
+    ]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +115,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
 
     const reversed = [...paymentHistory].reverse();
     const historyStr = reversed
-      .map((p) => `${p.amount}__${p.date}`)
+      .map((p) => `${p.amount}__${p.date}__${p.utr}__${p.status}`)
       .join('|||');
 
     await updateLead(lead.id, {
@@ -152,6 +180,8 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
               <tr>
                 <th className="p-2">Date</th>
                 <th className="p-2">Amount</th>
+                <th className="p-2">UTR</th>
+                {role === 'financial_manager' && <th className="p-2">Status</th>}
               </tr>
             </thead>
             <tbody>
@@ -159,13 +189,48 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                 <tr key={i} className="border-b border-gray-700">
                   <td className="p-2 text-gray-400">{new Date(entry.date).toLocaleDateString()}</td>
                   <td className="p-2">
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={entry.amount}
-                      onChange={(e) => handlePaymentChange(i, e.target.value)}
-                    />
+                    {entry.status === 'pending' && role === 'relationship_mgr' ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                        <span>Awaiting Approval</span>
+                      </div>
+                    ) : role === 'financial_manager' ? (
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={entry.amount}
+                        onChange={(e) => handlePaymentChange(i, e.target.value)}
+                      />
+                    ) : (
+                      entry.amount
+                    )}
                   </td>
+                  <td className="p-2">
+                    {role === 'financial_manager' ? (
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={entry.utr}
+                        onChange={(e) => handleUtrChange(i, e.target.value)}
+                      />
+                    ) : (
+                      entry.utr || '—'
+                    )}
+                  </td>
+                  {role === 'financial_manager' && (
+                    <td className="p-2">
+                      <select
+                        className="form-input"
+                        value={entry.status}
+                        onChange={(e) =>
+                          handleStatusChange(i, e.target.value as 'pending' | 'approved')
+                        }
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                      </select>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
