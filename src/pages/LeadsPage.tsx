@@ -394,7 +394,14 @@ function LeadsPage() {
           <div className="space-y-2 text-gray-200">
             <p><strong>Full Name:</strong> {infoLead.fullName}</p>
             <p><strong>Email:</strong> {infoLead.email}</p>
-            <p><strong>Phone:</strong> {infoLead.phone || '—'}</p>
+            <p>
+              <strong>Phone:</strong>{' '}
+              {(role === 'relationship_mgr' || role === 'financial_manager')
+                ? infoLead.phone
+                  ? `${infoLead.phone.slice(0, 2)}******`
+                  : '—'
+                : infoLead.phone || '—'}
+            </p>
             <p><strong>Alternate Number:</strong> {infoLead.altNumber || '—'}</p>
             <p><strong>Deemat Account:</strong> {infoLead.deematAccountName || '—'}</p>
             <p><strong>Profession:</strong> {infoLead.profession || '—'}</p>
