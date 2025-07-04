@@ -14,7 +14,7 @@ const getLeads = async (req, res) => {
   try {
     let result;
 
-    if (role === 'relationship_mgr') {
+    if (role === 'relationship_mgr' || role === 'financial_manager') {
       result = await pool.query(
         `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role
          FROM leads l
@@ -47,7 +47,7 @@ const getLeads = async (req, res) => {
         `SELECT l.*, u.display_name AS assigned_user_name, u.role AS assigned_user_role
          FROM leads l
          LEFT JOIN users u ON l.assigned_to = u.id
-         WHERE u.role = 'relationship_mgr'
+         WHERE u.role = ANY('{relationship_mgr,financial_manager}')
          ORDER BY l.date DESC`
       );
     } else {
@@ -97,13 +97,13 @@ const addLead = async (req, res) => {
     let assignedTo = null;
     let finalTeamId = team_id;
 
-    if (role === 'relationship_mgr') {
-      assignedTo = user_id;
-      if (!finalTeamId) {
-        const rm = await pool.query('SELECT team_id FROM users WHERE id = $1', [user_id]);
-        finalTeamId = rm.rows[0]?.team_id || null;
-      }
+  if (role === 'relationship_mgr' || role === 'financial_manager') {
+    assignedTo = user_id;
+    if (!finalTeamId) {
+      const rm = await pool.query('SELECT team_id FROM users WHERE id = $1', [user_id]);
+      finalTeamId = rm.rows[0]?.team_id || null;
     }
+  }
 
     const safeTeamId = finalTeamId && finalTeamId.trim() !== '' ? finalTeamId : null;
     const safeAssignedTo = assignedTo && assignedTo.trim() !== '' ? assignedTo : null;

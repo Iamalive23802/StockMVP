@@ -8,7 +8,12 @@ export interface User {
   email: string;
   phoneNumber: string;
   password?: string;
-  role: 'super_admin' | 'admin' | 'team_leader' | 'relationship_mgr';
+  role:
+    | 'super_admin'
+    | 'admin'
+    | 'team_leader'
+    | 'relationship_mgr'
+    | 'financial_manager';
   status: 'Active' | 'Inactive';
   team_id?: string;
 }

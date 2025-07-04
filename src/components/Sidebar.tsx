@@ -37,7 +37,7 @@ function Sidebar() {
       label: 'Leads',
       path: '/leads',
       icon: <Target size={18} className="mr-2" />,
-      roles: ['super_admin', 'admin', 'team_leader', 'relationship_mgr'],
+      roles: ['super_admin', 'admin', 'team_leader', 'relationship_mgr', 'financial_manager'],
     },
     {
       label: 'Teams',
@@ -56,7 +56,7 @@ function Sidebar() {
       label: 'Clients',
       path: '/clients',
       icon: <Trophy size={18} className="mr-2" />,
-      roles: ['super_admin', 'admin', 'team_leader', 'relationship_mgr'],
+      roles: ['super_admin', 'admin', 'team_leader', 'relationship_mgr', 'financial_manager'],
     },
   ];
 

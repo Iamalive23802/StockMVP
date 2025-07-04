@@ -63,7 +63,11 @@ const Dashboard = () => {
     }));
 
   const rmSales = users
-    .filter(u => u.role === 'relationship_mgr' && (role !== 'team_leader' || u.team_id === teamId))
+    .filter(
+      u =>
+        (u.role === 'relationship_mgr' || u.role === 'financial_manager') &&
+        (role !== 'team_leader' || u.team_id === teamId)
+    )
     .map(rm => {
       const rmLeads = filteredLeads.filter(l => l.assigned_to === rm.id && l.status === 'Won');
       const sales = rmLeads.reduce((sum, lead) => {

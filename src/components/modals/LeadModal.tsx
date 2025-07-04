@@ -90,7 +90,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
       status: formData.status as Lead['status'],
     };
 
-    if (role === 'relationship_mgr') {
+    if (role === 'relationship_mgr' || role === 'financial_manager') {
       const user = users.find(u => u.id === userId);
       if (user) {
         finalData = {
