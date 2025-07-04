@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import { useLeadStore, Lead } from '../../stores/leadStore';
-import { useAuthStore } from '../../stores/authStore';
-import {
-  parsePaymentHistory,
-  stringifyPaymentHistory,
-  type PaymentEntry
-} from '../../utils/paymentHistory';
 
 interface ClientDetailsModalProps {
   isOpen: boolean;
@@ -16,7 +10,6 @@ interface ClientDetailsModalProps {
 
 const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose, lead }) => {
   const { updateLead } = useLeadStore();
-  const { role } = useAuthStore();
   const [formData, setFormData] = useState({
     gender: '',
     dob: '',
@@ -26,7 +19,9 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     wonOn: ''
   });
 
-  const [paymentHistory, setPaymentHistory] = useState<PaymentEntry[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<
+    { amount: string; date: string }[]
+  >([]);
 
   useEffect(() => {
     if (lead) {
@@ -48,7 +43,16 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
         wonOn: parseWon()
       });
 
-      const history = parsePaymentHistory(lead.paymentHistory);
+      const history = lead.paymentHistory
+        ?.split('|||')
+        .map(entry => {
+          const parts = entry.split('__');
+          return {
+            amount: parts[0] || '',
+            date: parts[1] || new Date().toISOString()
+          };
+        }) || [];
+
       setPaymentHistory(history.reverse()); // newest first
     }
   }, [lead]);
@@ -67,38 +71,24 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000)).toString();
   };
 
-  const handlePaymentChange = (
-    index: number,
-    field: 'amount' | 'utr',
-    value: string
-  ) => {
+  const handlePaymentChange = (index: number, value: string) => {
     const updated = [...paymentHistory];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (updated[index] as any)[field] = value;
+    updated[index].amount = value;
     setPaymentHistory(updated);
   };
 
   const addPaymentRow = () => {
     const now = new Date().toISOString();
-    setPaymentHistory([
-      { amount: '', date: now, utr: '', status: 'pending' },
-      ...paymentHistory
-    ]);
-  };
-
-  const approvePayment = (index: number) => {
-    const updated = [...paymentHistory];
-    if (updated[index].utr && updated[index].utr !== '') {
-      updated[index].status = 'approved';
-      setPaymentHistory(updated);
-    }
+    setPaymentHistory([{ amount: '', date: now }, ...paymentHistory]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const reversed = [...paymentHistory].reverse();
-    const historyStr = stringifyPaymentHistory(reversed);
+    const historyStr = reversed
+      .map((p) => `${p.amount}__${p.date}`)
+      .join('|||');
 
     await updateLead(lead.id, {
       ...lead,
@@ -162,10 +152,6 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
               <tr>
                 <th className="p-2">Date</th>
                 <th className="p-2">Amount</th>
-                <th className="p-2">UTR</th>
-                {role === 'financial_manager' && (
-                  <th className="p-2">Actions</th>
-                )}
               </tr>
             </thead>
             <tbody>
@@ -173,48 +159,13 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                 <tr key={i} className="border-b border-gray-700">
                   <td className="p-2 text-gray-400">{new Date(entry.date).toLocaleDateString()}</td>
                   <td className="p-2">
-                    {entry.status === 'pending' && role !== 'financial_manager' ? (
-                      <div className="flex items-center gap-2">
-                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                        </svg>
-                        Awaiting Approval
-                      </div>
-                    ) : entry.status === 'pending' && role === 'financial_manager' ? (
-                      <input
-                        type="text"
-                        className="form-input"
-                        value={entry.amount}
-                        onChange={(e) => handlePaymentChange(i, 'amount', e.target.value)}
-                      />
-                    ) : (
-                      entry.amount
-                    )}
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={entry.amount}
+                      onChange={(e) => handlePaymentChange(i, e.target.value)}
+                    />
                   </td>
-                  <td className="p-2">
-                    {entry.status === 'pending' && role === 'financial_manager' ? (
-                      <input
-                        type="text"
-                        className="form-input"
-                        value={entry.utr || ''}
-                        onChange={(e) => handlePaymentChange(i, 'utr', e.target.value)}
-                      />
-                    ) : (
-                      entry.utr || '—'
-                    )}
-                  </td>
-                  {role === 'financial_manager' && entry.status === 'pending' && (
-                    <td className="p-2">
-                      <button
-                        type="button"
-                        onClick={() => approvePayment(i)}
-                        className="btn btn-primary text-xs"
-                      >
-                        Approve
-                      </button>
-                    </td>
-                  )}
                 </tr>
               ))}
             </tbody>
