@@ -24,7 +24,12 @@ function LoginPage() {
     try {
       await login(email, password);
       addToast('Logged in successfully', 'success');
-      navigate('/');
+      const role = useAuthStore.getState().role;
+      if (role === 'relationship_mgr') {
+        navigate('/leads');
+      } else {
+        navigate('/');
+      }
     } catch (err: any) {
       // ✅ Safely access error message from backend
       const backendMessage =
