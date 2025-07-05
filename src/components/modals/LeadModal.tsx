@@ -147,6 +147,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.fullName}
             onChange={handleChange}
             required
+            disabled={role === 'relationship_mgr' && !!lead?.fullName}
           />
         </div>
 
@@ -158,6 +159,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.phone}
             onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead?.phone}
           />
         </div>
 
