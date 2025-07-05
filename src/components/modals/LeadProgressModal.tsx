@@ -71,7 +71,7 @@ const LeadProgressModal: React.FC<LeadProgressModalProps> = ({ isOpen, onClose, 
       fullName,
       notes: updatedNotes,
       status: newStatus,
-    }, 'progress');
+    });
 
     onClose();
   };
@@ -86,7 +86,7 @@ const LeadProgressModal: React.FC<LeadProgressModalProps> = ({ isOpen, onClose, 
       fullName,
       notes: pendingUpdate.updatedNotes,
       status: pendingUpdate.newStatus,
-    }, 'progress');
+    });
     setShowConfirm(false);
     setPendingUpdate(null);
     onClose();
