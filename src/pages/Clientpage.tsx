@@ -120,8 +120,6 @@ const ClientsPage = () => {
                   : '—'
                 : infoLead.phone || '—'}
             </p>
-            <p><strong>Notes:</strong> {infoLead.notes || '—'}</p>
-            <p><strong>Won On:</strong> {getWonDate(infoLead) ? new Date(getWonDate(infoLead)).toLocaleDateString() : '—'}</p>
             <p><strong>Gender:</strong> {infoLead.gender || '—'}</p>
             <p><strong>DOB:</strong> {infoLead.dob || '—'}</p>
             <p><strong>PAN Card No:</strong> {infoLead.panCardNumber || '—'}</p>

@@ -22,30 +22,17 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
     dob: '',
     panCardNumber: '',
     aadharCardNumber: '',
-    notes: '',
-    wonOn: ''
   });
 
   const [paymentHistory, setPaymentHistory] = useState<PaymentEntry[]>([]);
 
   useEffect(() => {
     if (lead) {
-      const parseWon = () => {
-        if (lead.wonOn) return lead.wonOn;
-        if (!lead.notes) return '';
-        const entries = lead.notes.split('|||').map(e => e.split('__'));
-        for (let i = entries.length - 1; i >= 0; i--) {
-          if (entries[i][1] === 'Won' && entries[i][2]) return entries[i][2].split('T')[0];
-        }
-        return '';
-      };
       setFormData({
         gender: lead.gender || '',
         dob: lead.dob || '',
         panCardNumber: lead.panCardNumber || '',
         aadharCardNumber: lead.aadharCardNumber || '',
-        notes: lead.notes || '',
-        wonOn: parseWon()
       });
 
       const history = parsePaymentHistory(lead.paymentHistory);
@@ -115,8 +102,6 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
       age: calculateAge(formData.dob),
       panCardNumber: formData.panCardNumber,
       aadharCardNumber: formData.aadharCardNumber,
-      notes: formData.notes,
-      wonOn: formData.wonOn,
       paymentHistory: historyStr
     });
     onClose();
@@ -127,7 +112,13 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label">Gender</label>
-          <select name="gender" className="form-input" value={formData.gender} onChange={handleChange}>
+          <select
+            name="gender"
+            className="form-input"
+            value={formData.gender}
+            onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead.gender}
+          >
             <option value="">Select</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
@@ -136,23 +127,36 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
         </div>
         <div className="form-group">
           <label className="form-label">Date of Birth</label>
-          <input type="date" name="dob" className="form-input" value={formData.dob} onChange={handleChange} />
+          <input
+            type="date"
+            name="dob"
+            className="form-input"
+            value={formData.dob}
+            onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead.dob}
+          />
         </div>
         <div className="form-group">
           <label className="form-label">PAN Card Number</label>
-          <input type="text" name="panCardNumber" className="form-input" value={formData.panCardNumber} onChange={handleChange} />
+          <input
+            type="text"
+            name="panCardNumber"
+            className="form-input"
+            value={formData.panCardNumber}
+            onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead.panCardNumber}
+          />
         </div>
         <div className="form-group">
           <label className="form-label">Aadhar Card Number</label>
-          <input type="text" name="aadharCardNumber" className="form-input" value={formData.aadharCardNumber} onChange={handleChange} />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Notes</label>
-          <textarea name="notes" className="form-input" rows={3} value={formData.notes} onChange={handleChange} />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Won On</label>
-          <input type="date" name="wonOn" className="form-input" value={formData.wonOn} onChange={handleChange} />
+          <input
+            type="text"
+            name="aadharCardNumber"
+            className="form-input"
+            value={formData.aadharCardNumber}
+            onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead.aadharCardNumber}
+          />
         </div>
         <div className="form-group">
           <div className="flex justify-between items-center mb-2">
@@ -183,6 +187,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                       className="form-input"
                       value={entry.amount}
                       onChange={(e) => handlePaymentChange(i, 'amount', e.target.value)}
+                      disabled={role === 'relationship_mgr' && !entry.isNew}
                     />
                   </td>
                   <td className="p-2">
