@@ -92,15 +92,13 @@ const ClientsPage = () => {
                       >
                         <Info size={16} />
                       </button>
-                      {role !== 'relationship_mgr' && (
-                        <button
-                          onClick={() => setEditLead(lead)}
-                          className="text-blue-400 hover:text-blue-300"
-                          title="Edit Client"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setEditLead(lead)}
+                        className="text-blue-400 hover:text-blue-300"
+                        title="Edit Client"
+                      >
+                        <Pencil size={16} />
+                      </button>
                     </td>
                   </tr>
                 );

@@ -21,8 +21,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
   const { role, userId } = useAuthStore();
   const addToast = useToastStore((state) => state.addToast);
 
-  const isReadOnly = role === 'relationship_mgr' && !!lead;
-
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [formData, setFormData] = useState<Omit<Lead, 'id'>>({
@@ -149,7 +147,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.fullName}
             onChange={handleChange}
             required
-            disabled={isReadOnly}
           />
         </div>
 
@@ -161,7 +158,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.phone}
             onChange={handleChange}
-            disabled={isReadOnly}
           />
         </div>
 
@@ -174,7 +170,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.email}
             onChange={handleChange}
             required
-            disabled={isReadOnly}
           />
         </div>
 
@@ -186,7 +181,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.altNumber}
             onChange={handleChange}
-            disabled={isReadOnly}
           />
         </div>
 
@@ -197,7 +191,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.deematAccountName}
             onChange={handleChange}
-            disabled={isReadOnly}
           >
             <option value="">Select</option>
             <option value="Zerodha">Zerodha</option>
@@ -213,7 +206,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.profession}
             onChange={handleChange}
-            disabled={isReadOnly}
           >
             <option value="">Select</option>
             <option value="Student">Student</option>
@@ -229,7 +221,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.stateName}
             onChange={handleChange}
-            disabled={isReadOnly}
           >
             <option value="">Select</option>
             <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -271,7 +262,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.capital}
             onChange={handleChange}
-            disabled={isReadOnly}
           />
         </div>
 
@@ -283,7 +273,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.segment}
             onChange={handleChange}
-            disabled={isReadOnly}
           />
         </div>
 
@@ -295,7 +284,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.notes}
             onChange={handleChange}
             rows={3}
-            disabled={isReadOnly}
           />
         </div>
 
@@ -306,7 +294,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.status}
             onChange={handleChange}
-            disabled={isReadOnly}
           >
             <option value="New">New</option>
             <option value="Contacted">Contacted</option>
@@ -325,11 +312,9 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
           >
             Cancel
           </button>
-          {!isReadOnly && (
-            <button type="submit" className="btn btn-primary">
-              {lead ? 'Update Lead' : 'Add Lead'}
-            </button>
-          )}
+          <button type="submit" className="btn btn-primary">
+            {lead ? 'Update Lead' : 'Add Lead'}
+          </button>
         </div>
       </form>
     </Modal>
