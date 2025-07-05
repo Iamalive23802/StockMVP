@@ -76,8 +76,7 @@ export const useLeadStore = create<LeadStore>((set) => ({
   addLead: async (lead) => {
     const addToast = useToastStore.getState().addToast;
     try {
-      const { role, userId } = useAuthStore.getState();
-      await axios.post('/api/leads', lead, { params: { role, user_id: userId } });
+      await axios.post('/api/leads', lead);
       await useLeadStore.getState().fetchLeads();
       addToast('Lead added successfully', 'success');
     } catch (err) {
@@ -89,8 +88,7 @@ export const useLeadStore = create<LeadStore>((set) => ({
   updateLead: async (id, lead) => {
     const addToast = useToastStore.getState().addToast;
     try {
-      const { role, userId } = useAuthStore.getState();
-      await axios.put(`/api/leads/${id}`, lead, { params: { role, user_id: userId } });
+      await axios.put(`/api/leads/${id}`, lead);
       await useLeadStore.getState().fetchLeads();
       addToast('Lead updated successfully', 'success');
     } catch (err) {
