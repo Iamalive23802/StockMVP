@@ -8,6 +8,7 @@ import TeamsPage from './pages/TeamsPage';
 import AssignTeamPage from './pages/AssignTeamPage';
 import LoginPage from './pages/LoginPage';
 import ClientsPage from './pages/Clientpage';
+import AllClientsPage from './pages/AllClientsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingScreen from './components/LoadingScreen';
 import { useAuthStore } from './stores/authStore';
@@ -88,6 +89,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['super_admin', 'admin', 'team_leader', 'relationship_mgr', 'financial_manager']}>
               <ClientsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="all-clients"
+          element={
+            <ProtectedRoute allowedRoles={['financial_manager']}>
+              <AllClientsPage />
             </ProtectedRoute>
           }
         />
