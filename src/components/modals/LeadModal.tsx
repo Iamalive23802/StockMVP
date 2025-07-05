@@ -22,7 +22,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
   const addToast = useToastStore((state) => state.addToast);
 
   const [showConfirm, setShowConfirm] = useState(false);
-  const [locked, setLocked] = useState(false);
 
   const [formData, setFormData] = useState<Omit<Lead, 'id'>>({
     fullName: '',
@@ -46,7 +45,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
 
   useEffect(() => {
     if (lead) {
-      setLocked(localStorage.getItem(`lead_locked_${lead.id}`) === 'true');
       setFormData({
         fullName: lead.fullName || '',
         phone: lead.phone || '',
@@ -62,7 +60,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
         team_id: lead.team_id || '',
       });
     } else {
-      setLocked(false);
       setFormData({
         fullName: '',
         phone: '',
@@ -109,10 +106,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
 
   if (lead) {
     await updateLead(lead.id, finalData);
-    if (role === 'relationship_mgr') {
-      localStorage.setItem(`lead_locked_${lead.id}`, 'true');
-      setLocked(true);
-    }
   } else {
     await addLead(finalData);
   }
@@ -188,7 +181,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.altNumber}
             onChange={handleChange}
-            disabled={locked && role === 'relationship_mgr'}
           />
         </div>
 
@@ -199,7 +191,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.deematAccountName}
             onChange={handleChange}
-            disabled={locked && role === 'relationship_mgr'}
           >
             <option value="">Select</option>
             <option value="Zerodha">Zerodha</option>
@@ -215,7 +206,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.profession}
             onChange={handleChange}
-            disabled={locked && role === 'relationship_mgr'}
           >
             <option value="">Select</option>
             <option value="Student">Student</option>
@@ -231,7 +221,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.stateName}
             onChange={handleChange}
-            disabled={locked && role === 'relationship_mgr'}
           >
             <option value="">Select</option>
             <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -273,7 +262,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.capital}
             onChange={handleChange}
-            disabled={locked && role === 'relationship_mgr'}
           />
         </div>
 
@@ -285,7 +273,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.segment}
             onChange={handleChange}
-            disabled={locked && role === 'relationship_mgr'}
           />
         </div>
 
@@ -297,7 +284,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.notes}
             onChange={handleChange}
             rows={3}
-            disabled={locked && role === 'relationship_mgr'}
           />
         </div>
 

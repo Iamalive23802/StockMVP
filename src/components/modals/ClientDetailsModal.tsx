@@ -17,7 +17,6 @@ interface ClientDetailsModalProps {
 const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose, lead }) => {
   const { updateLead } = useLeadStore();
   const { role } = useAuthStore();
-  const [locked, setLocked] = useState(false);
   const [formData, setFormData] = useState({
     gender: '',
     dob: '',
@@ -31,7 +30,6 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
 
   useEffect(() => {
     if (lead) {
-      setLocked(localStorage.getItem(`client_locked_${lead.id}`) === 'true');
       const parseWon = () => {
         if (lead.wonOn) return lead.wonOn;
         if (!lead.notes) return '';
@@ -52,8 +50,6 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
 
       const history = parsePaymentHistory(lead.paymentHistory);
       setPaymentHistory(history.reverse()); // newest first
-    } else {
-      setLocked(false);
     }
   }, [lead]);
 
@@ -82,7 +78,6 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
   };
 
   const addPaymentRow = () => {
-    if (locked && role === 'relationship_mgr') return;
     const now = new Date().toISOString();
     setPaymentHistory([
       {
@@ -124,10 +119,6 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
       wonOn: formData.wonOn,
       paymentHistory: historyStr
     });
-    if (role === 'relationship_mgr') {
-      localStorage.setItem(`client_locked_${lead.id}`, 'true');
-      setLocked(true);
-    }
     onClose();
   };
 
@@ -136,7 +127,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label">Gender</label>
-          <select name="gender" className="form-input" value={formData.gender} onChange={handleChange} disabled={locked && role === 'relationship_mgr'}>
+          <select name="gender" className="form-input" value={formData.gender} onChange={handleChange}>
             <option value="">Select</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
@@ -145,23 +136,23 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
         </div>
         <div className="form-group">
           <label className="form-label">Date of Birth</label>
-          <input type="date" name="dob" className="form-input" value={formData.dob} onChange={handleChange} disabled={locked && role === 'relationship_mgr'} />
+          <input type="date" name="dob" className="form-input" value={formData.dob} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label className="form-label">PAN Card Number</label>
-          <input type="text" name="panCardNumber" className="form-input" value={formData.panCardNumber} onChange={handleChange} disabled={locked && role === 'relationship_mgr'} />
+          <input type="text" name="panCardNumber" className="form-input" value={formData.panCardNumber} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label className="form-label">Aadhar Card Number</label>
-          <input type="text" name="aadharCardNumber" className="form-input" value={formData.aadharCardNumber} onChange={handleChange} disabled={locked && role === 'relationship_mgr'} />
+          <input type="text" name="aadharCardNumber" className="form-input" value={formData.aadharCardNumber} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label className="form-label">Notes</label>
-          <textarea name="notes" className="form-input" rows={3} value={formData.notes} onChange={handleChange} disabled={locked && role === 'relationship_mgr'} />
+          <textarea name="notes" className="form-input" rows={3} value={formData.notes} onChange={handleChange} />
         </div>
         <div className="form-group">
           <label className="form-label">Won On</label>
-          <input type="date" name="wonOn" className="form-input" value={formData.wonOn} onChange={handleChange} disabled={locked && role === 'relationship_mgr'} />
+          <input type="date" name="wonOn" className="form-input" value={formData.wonOn} onChange={handleChange} />
         </div>
         <div className="form-group">
           <div className="flex justify-between items-center mb-2">
@@ -170,7 +161,6 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
               type="button"
               onClick={addPaymentRow}
               className="text-sm px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 transition"
-              disabled={locked && role === 'relationship_mgr'}
             >
               + Add Payment
             </button>
@@ -193,7 +183,6 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                       className="form-input"
                       value={entry.amount}
                       onChange={(e) => handlePaymentChange(i, 'amount', e.target.value)}
-                      disabled={locked && role === 'relationship_mgr'}
                     />
                   </td>
                   <td className="p-2">
@@ -207,7 +196,6 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                           value={entry.utr}
                           onChange={(e) => handlePaymentChange(i, 'utr', e.target.value)}
                           onBlur={() => handlePaymentChange(i, 'approved', true)}
-                          disabled={locked && role === 'relationship_mgr'}
                         />
                       )
                     ) : entry.approved ? (
@@ -226,7 +214,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
         </div>
         <div className="flex justify-end space-x-3 mt-6">
           <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn btn-primary" disabled={locked && role === 'relationship_mgr'}>Save</button>
+          <button type="submit" className="btn btn-primary">Save</button>
         </div>
       </form>
     </Modal>
