@@ -174,6 +174,9 @@ function LeadsPage() {
     return false;
   });
 
+  const getAssignedUserName = (id?: string) =>
+    users.find((u) => u.id === id)?.displayName || 'Unassigned';
+
   return (
     <div className="container mx-auto px-4" onMouseUp={handleMouseUp}>
       <div className="flex justify-between items-center mb-6">
@@ -290,7 +293,11 @@ function LeadsPage() {
                 </th>
                 <th className="w-40 p-3">Full Name</th>
                 <th className="w-32 p-3">Phone</th>
-                <th className="w-48 p-3">Email</th>
+                {role === 'super_admin' ? (
+                  <th className="w-48 p-3">Assigned To</th>
+                ) : (
+                  <th className="w-48 p-3">Email</th>
+                )}
                 <th className="w-28 p-3 relative">
                   <div ref={statusFilterRef} className="flex items-center gap-1 relative">
                     <span>Status</span>
@@ -352,7 +359,11 @@ function LeadsPage() {
                       <Copy size={14} />
                     </button>
                   </td>
-                  <td className="p-3 truncate">{lead.email}</td>
+                  {role === 'super_admin' ? (
+                    <td className="p-3 truncate">{getAssignedUserName(lead.assigned_to)}</td>
+                  ) : (
+                    <td className="p-3 truncate">{lead.email}</td>
+                  )}
                   <td className="p-3">
                     <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(lead.status)}`}>
                       {lead.status}
@@ -393,7 +404,11 @@ function LeadsPage() {
         <Modal isOpen={true} onClose={() => setInfoLead(null)} title="Lead Information">
           <div className="space-y-2 text-gray-200">
             <p><strong>Full Name:</strong> {infoLead.fullName}</p>
-            <p><strong>Email:</strong> {infoLead.email}</p>
+            {role === 'super_admin' ? (
+              <p><strong>Assigned To:</strong> {getAssignedUserName(infoLead.assigned_to)}</p>
+            ) : (
+              <p><strong>Email:</strong> {infoLead.email}</p>
+            )}
             <p>
               <strong>Phone:</strong>{' '}
               {(role === 'relationship_mgr' || role === 'financial_manager')
