@@ -25,6 +25,7 @@ export interface Lead {
   status: 'New' | 'Contacted' | 'Qualified' | 'Proposal' | 'Won' | 'Lost';
   team_id: string;
   assigned_to?: string;
+  rmEditable?: boolean;
 }
 
 interface LeadStore {
@@ -63,7 +64,8 @@ export const useLeadStore = create<LeadStore>((set) => ({
         age: lead.age,
         panCardNumber: lead.pan_card_number,
         aadharCardNumber: lead.aadhar_card_number,
-        paymentHistory: lead.payment_history
+        paymentHistory: lead.payment_history,
+        rmEditable: lead.rm_editable
       }));
       set({ leads: mapped });
     } catch (err) {
@@ -87,8 +89,9 @@ export const useLeadStore = create<LeadStore>((set) => ({
 
   updateLead: async (id, lead) => {
     const addToast = useToastStore.getState().addToast;
+    const { role } = useAuthStore.getState();
     try {
-      await axios.put(`/api/leads/${id}`, lead);
+      await axios.put(`/api/leads/${id}`, lead, { params: { role } });
       await useLeadStore.getState().fetchLeads();
       addToast('Lead updated successfully', 'success');
     } catch (err) {
