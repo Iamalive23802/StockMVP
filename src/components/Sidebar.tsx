@@ -53,10 +53,16 @@ function Sidebar() {
     },
     */
     {
-      label: 'Clients',
+      label: role === 'financial_manager' ? 'Clients Awaiting Approval' : 'Clients',
       path: '/clients',
       icon: <Trophy size={18} className="mr-2" />,
       roles: ['super_admin', 'admin', 'team_leader', 'relationship_mgr', 'financial_manager'],
+    },
+    {
+      label: 'Clients',
+      path: '/all-clients',
+      icon: <Trophy size={18} className="mr-2" />,
+      roles: ['financial_manager'],
     },
   ];
 
