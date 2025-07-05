@@ -22,6 +22,9 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
   const addToast = useToastStore((state) => state.addToast);
 
   const [showConfirm, setShowConfirm] = useState(false);
+  const [noteHistory, setNoteHistory] = useState<
+    { note: string; status: Lead['status']; date: string }[]
+  >([]);
 
   const [formData, setFormData] = useState<Omit<Lead, 'id'>>({
     fullName: '',
@@ -59,6 +62,17 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
         status: lead.status || 'New',
         team_id: lead.team_id || '',
       });
+      const history = lead.notes
+        ?.split('|||')
+        .map((entry) => {
+          const parts = entry.split('__');
+          return {
+            note: parts[0] || '',
+            status: (parts[1] || 'New') as Lead['status'],
+            date: parts[2] || new Date().toISOString(),
+          };
+        }) || [];
+      setNoteHistory(history.reverse());
     } else {
       setFormData({
         fullName: '',
@@ -74,6 +88,13 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
         status: 'New',
         team_id: '',
       });
+      setNoteHistory([
+        {
+          note: '',
+          status: 'New',
+          date: new Date().toISOString(),
+        },
+      ]);
     }
   }, [lead]);
 
@@ -84,10 +105,39 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleNoteChange = (
+    index: number,
+    field: 'note' | 'status',
+    value: string
+  ) => {
+    const updated = [...noteHistory];
+    updated[index][field] = value as any;
+    setNoteHistory(updated);
+  };
+
+  const addNewRow = () => {
+    const now = new Date().toISOString();
+    setNoteHistory([
+      {
+        status: 'New',
+        note: '',
+        date: now,
+      },
+      ...noteHistory,
+    ]);
+  };
+
   const submitLead = async (forcedStatus?: string) => {
+  const reversed = [...noteHistory].reverse();
+  const notesString = reversed
+    .map((n) => `${n.note.trim()}__${n.status}__${n.date}`)
+    .join('|||');
+  const newStatus = noteHistory[0]?.status || 'New';
+
   let finalData = {
     ...formData,
-    status: (forcedStatus ?? formData.status) as Lead['status'],
+    notes: notesString,
+    status: (forcedStatus ?? newStatus) as Lead['status'],
   };
 
   if (role === 'relationship_mgr') {
@@ -126,7 +176,8 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
       return;
     }
 
-    if (lead?.status !== 'Won' && formData.status === 'Won') {
+    const latestStatus = noteHistory[0]?.status || 'New';
+    if (lead?.status !== 'Won' && latestStatus === 'Won') {
       setShowConfirm(true);
       return;
     }
@@ -286,31 +337,55 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Notes</label>
-          <textarea
-            name="notes"
-            className="form-input"
-            value={formData.notes}
-            onChange={handleChange}
-            rows={3}
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Status</label>
-          <select
-            name="status"
-            className="form-input"
-            value={formData.status}
-            onChange={handleChange}
-          >
-            <option value="New">New</option>
-            <option value="Contacted">Contacted</option>
-            <option value="Qualified">Qualified</option>
-            <option value="Proposal">Proposal</option>
-            <option value="Won">Won</option>
-            <option value="Lost">Lost</option>
-          </select>
+          <div className="flex justify-between items-center mb-2">
+            <label className="form-label">Status &amp; Notes History</label>
+            <button
+              type="button"
+              onClick={addNewRow}
+              className="text-sm px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 transition"
+            >
+              + Add Row
+            </button>
+          </div>
+          <table className="w-full text-sm text-left">
+            <thead className="text-gray-400 border-b border-gray-600">
+              <tr>
+                <th className="p-2">Date &amp; Time</th>
+                <th className="p-2">Status</th>
+                <th className="p-2">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {noteHistory.map((entry, i) => (
+                <tr key={i} className="border-b border-gray-700">
+                  <td className="p-2 text-gray-400">{new Date(entry.date).toLocaleString()}</td>
+                  <td className="p-2">
+                    <select
+                      className="form-input"
+                      value={entry.status}
+                      onChange={(e) => handleNoteChange(i, 'status', e.target.value)}
+                    >
+                      <option value="New">New</option>
+                      <option value="Contacted">Contacted</option>
+                      <option value="Qualified">Qualified</option>
+                      <option value="Proposal">Proposal</option>
+                      <option value="Won">Won</option>
+                      <option value="Lost">Lost</option>
+                    </select>
+                  </td>
+                  <td className="p-2">
+                    <textarea
+                      className="form-input"
+                      rows={2}
+                      placeholder="Enter note"
+                      value={entry.note}
+                      onChange={(e) => handleNoteChange(i, 'note', e.target.value)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         <div className="flex justify-end space-x-3 mt-6">
@@ -332,10 +407,13 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     isOpen={true}
     onClose={() => {
       setShowConfirm(false);
-      setFormData(prev => ({
-        ...prev,
-        status: lead?.status || 'New',
-      }));
+      setNoteHistory((prev) => {
+        const updated = [...prev];
+        if (updated.length > 0) {
+          updated[0].status = lead?.status || 'New';
+        }
+        return updated;
+      });
     }}
     onConfirm={async () => {
       console.log("🟡 ConfirmModal confirmed"); // ← add this
