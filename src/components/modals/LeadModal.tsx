@@ -23,8 +23,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
 
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const isRMEditingExisting = role === 'relationship_mgr' && !!lead;
-
   const [formData, setFormData] = useState<Omit<Lead, 'id'>>({
     fullName: '',
     phone: '',
@@ -149,7 +147,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.fullName}
             onChange={handleChange}
             required
-            disabled={isRMEditingExisting}
           />
         </div>
 
@@ -161,7 +158,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.phone}
             onChange={handleChange}
-            disabled={isRMEditingExisting}
           />
         </div>
 
@@ -174,7 +170,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.email}
             onChange={handleChange}
             required
-            disabled={isRMEditingExisting}
           />
         </div>
 
@@ -186,7 +181,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.altNumber}
             onChange={handleChange}
-            disabled={isRMEditingExisting}
           />
         </div>
 
@@ -197,7 +191,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.deematAccountName}
             onChange={handleChange}
-            disabled={isRMEditingExisting}
           >
             <option value="">Select</option>
             <option value="Zerodha">Zerodha</option>
@@ -213,7 +206,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.profession}
             onChange={handleChange}
-            disabled={isRMEditingExisting}
           >
             <option value="">Select</option>
             <option value="Student">Student</option>
@@ -229,7 +221,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.stateName}
             onChange={handleChange}
-            disabled={isRMEditingExisting}
           >
             <option value="">Select</option>
             <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -271,7 +262,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.capital}
             onChange={handleChange}
-            disabled={isRMEditingExisting}
           />
         </div>
 
@@ -283,7 +273,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.segment}
             onChange={handleChange}
-            disabled={isRMEditingExisting}
           />
         </div>
 
