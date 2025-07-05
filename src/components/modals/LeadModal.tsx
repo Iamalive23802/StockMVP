@@ -147,6 +147,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.fullName}
             onChange={handleChange}
             required
+            disabled={role === 'relationship_mgr' && !!lead}
           />
         </div>
 
@@ -158,6 +159,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.phone}
             onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead}
           />
         </div>
 
@@ -170,6 +172,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.email}
             onChange={handleChange}
             required
+            disabled={role === 'relationship_mgr' && !!lead?.email}
           />
         </div>
 
@@ -181,6 +184,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.altNumber}
             onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead?.altNumber}
           />
         </div>
 
@@ -191,6 +195,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.deematAccountName}
             onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead?.deematAccountName}
           >
             <option value="">Select</option>
             <option value="Zerodha">Zerodha</option>
@@ -206,6 +211,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.profession}
             onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead?.profession}
           >
             <option value="">Select</option>
             <option value="Student">Student</option>
@@ -221,6 +227,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.stateName}
             onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead?.stateName}
           >
             <option value="">Select</option>
             <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -262,6 +269,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.capital}
             onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead?.capital}
           />
         </div>
 
@@ -273,6 +281,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.segment}
             onChange={handleChange}
+            disabled={role === 'relationship_mgr' && !!lead?.segment}
           />
         </div>
 

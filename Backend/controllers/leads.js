@@ -143,6 +143,7 @@ const addLead = async (req, res) => {
 
 const updateLead = async (req, res) => {
   const { id } = req.params;
+  const { role } = req.query;
   const {
     fullName,
     email,
@@ -177,6 +178,40 @@ const updateLead = async (req, res) => {
   const safeAge = age && age !== '' ? age : null;
 
   try {
+    if (role === 'relationship_mgr') {
+      const existingRes = await pool.query(
+        `SELECT full_name, phone, email, alt_number, deemat_account_name, profession, state_name, capital, segment
+         FROM leads WHERE id = $1`,
+        [id]
+      );
+      if (existingRes.rows.length === 0) {
+        return res.status(404).json({ error: 'Lead not found' });
+      }
+      const existing = existingRes.rows[0];
+
+      if (fullName !== existing.full_name) {
+        return res.status(403).json({ error: "Field 'full_name' cannot be edited" });
+      }
+      if (phoneNorm !== normalizePhone(existing.phone)) {
+        return res.status(403).json({ error: "Field 'phone' cannot be edited" });
+      }
+
+      const checks = [
+        ['email', email, existing.email],
+        ['alt_number', altNumber, existing.alt_number],
+        ['deemat_account_name', deematAccountName, existing.deemat_account_name],
+        ['profession', profession, existing.profession],
+        ['state_name', stateName, existing.state_name],
+        ['capital', capital, existing.capital],
+        ['segment', segment, existing.segment],
+      ];
+      for (const [field, newVal, currentVal] of checks) {
+        if (currentVal && `${currentVal}`.trim() !== '' && newVal !== currentVal) {
+          return res.status(403).json({ error: `Field '${field}' cannot be edited once set` });
+        }
+      }
+    }
+
     const result = await pool.query(
       `UPDATE leads
        SET full_name = $1,

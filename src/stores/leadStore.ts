@@ -88,7 +88,8 @@ export const useLeadStore = create<LeadStore>((set) => ({
   updateLead: async (id, lead) => {
     const addToast = useToastStore.getState().addToast;
     try {
-      await axios.put(`/api/leads/${id}`, lead);
+      const { role, userId } = useAuthStore.getState();
+      await axios.put(`/api/leads/${id}`, lead, { params: { role, user_id: userId } });
       await useLeadStore.getState().fetchLeads();
       addToast('Lead updated successfully', 'success');
     } catch (err) {
