@@ -17,6 +17,7 @@ interface ClientDetailsModalProps {
 const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose, lead }) => {
   const { updateLead } = useLeadStore();
   const { role } = useAuthStore();
+  const isRM = role === 'relationship_mgr';
   const [formData, setFormData] = useState({
     gender: '',
     dob: '',
@@ -127,7 +128,13 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label">Gender</label>
-          <select name="gender" className="form-input" value={formData.gender} onChange={handleChange}>
+          <select
+            name="gender"
+            className="form-input"
+            value={formData.gender}
+            onChange={handleChange}
+            disabled={isRM}
+          >
             <option value="">Select</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
@@ -136,23 +143,58 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
         </div>
         <div className="form-group">
           <label className="form-label">Date of Birth</label>
-          <input type="date" name="dob" className="form-input" value={formData.dob} onChange={handleChange} />
+          <input
+            type="date"
+            name="dob"
+            className="form-input"
+            value={formData.dob}
+            onChange={handleChange}
+            disabled={isRM}
+          />
         </div>
         <div className="form-group">
           <label className="form-label">PAN Card Number</label>
-          <input type="text" name="panCardNumber" className="form-input" value={formData.panCardNumber} onChange={handleChange} />
+          <input
+            type="text"
+            name="panCardNumber"
+            className="form-input"
+            value={formData.panCardNumber}
+            onChange={handleChange}
+            disabled={isRM}
+          />
         </div>
         <div className="form-group">
           <label className="form-label">Aadhar Card Number</label>
-          <input type="text" name="aadharCardNumber" className="form-input" value={formData.aadharCardNumber} onChange={handleChange} />
+          <input
+            type="text"
+            name="aadharCardNumber"
+            className="form-input"
+            value={formData.aadharCardNumber}
+            onChange={handleChange}
+            disabled={isRM}
+          />
         </div>
         <div className="form-group">
           <label className="form-label">Notes</label>
-          <textarea name="notes" className="form-input" rows={3} value={formData.notes} onChange={handleChange} />
+          <textarea
+            name="notes"
+            className="form-input"
+            rows={3}
+            value={formData.notes}
+            onChange={handleChange}
+            disabled={isRM}
+          />
         </div>
         <div className="form-group">
           <label className="form-label">Won On</label>
-          <input type="date" name="wonOn" className="form-input" value={formData.wonOn} onChange={handleChange} />
+          <input
+            type="date"
+            name="wonOn"
+            className="form-input"
+            value={formData.wonOn}
+            onChange={handleChange}
+            disabled={isRM}
+          />
         </div>
         <div className="form-group">
           <div className="flex justify-between items-center mb-2">
@@ -161,6 +203,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
               type="button"
               onClick={addPaymentRow}
               className="text-sm px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 transition"
+              disabled={isRM}
             >
               + Add Payment
             </button>
@@ -183,10 +226,13 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                       className="form-input"
                       value={entry.amount}
                       onChange={(e) => handlePaymentChange(i, 'amount', e.target.value)}
+                      disabled={isRM}
                     />
                   </td>
                   <td className="p-2">
-                    {role === 'financial_manager' ? (
+                    {isRM ? (
+                      entry.utr || '—'
+                    ) : role === 'financial_manager' ? (
                       entry.approved ? (
                         entry.utr || '—'
                       ) : (
