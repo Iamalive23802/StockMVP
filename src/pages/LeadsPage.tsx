@@ -377,12 +377,14 @@ function LeadsPage() {
                     >
                       ℹ️
                     </button>
-                    <button
-                      onClick={() => handleEditLead(lead)}
-                      className="text-blue-400 hover:text-blue-300"
-                    >
-                      <Pencil size={16} />
-                    </button>
+                    {role !== 'relationship_mgr' && (
+                      <button
+                        onClick={() => handleEditLead(lead)}
+                        className="text-blue-400 hover:text-blue-300"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    )}
                     {(role === 'super_admin' || role === 'admin') && (
                       <button
                         onClick={() => handleDeleteLead(lead.id)}
