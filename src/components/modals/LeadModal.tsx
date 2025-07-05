@@ -20,6 +20,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
   const { users, fetchUsers } = useUserStore();
   const { role, userId } = useAuthStore();
   const addToast = useToastStore((state) => state.addToast);
+  const locked = role === 'relationship_mgr' && lead?.rmLocked;
 
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -89,6 +90,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     ...formData,
     status: (forcedStatus ?? formData.status) as Lead['status'],
   };
+  let context = 'lead_edit';
 
   if (role === 'relationship_mgr') {
     const user = users.find(u => u.id === userId);
@@ -101,11 +103,16 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     }
   }
 
+  if (locked && lead) {
+    finalData = { status: (forcedStatus ?? formData.status) as Lead['status'] } as any;
+    context = 'status_only';
+  }
+
   console.log("✅ submitLead triggered", formData);
   console.log("Final payload to update/add:", finalData);
 
   if (lead) {
-    await updateLead(lead.id, finalData);
+    await updateLead(lead.id, { ...lead, ...finalData }, context);
   } else {
     await addLead(finalData);
   }
@@ -147,6 +154,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.fullName}
             onChange={handleChange}
             required
+            disabled={locked}
           />
         </div>
 
@@ -158,6 +166,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.phone}
             onChange={handleChange}
+            disabled={locked}
           />
         </div>
 
@@ -170,6 +179,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.email}
             onChange={handleChange}
             required
+            disabled={locked}
           />
         </div>
 
@@ -181,6 +191,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.altNumber}
             onChange={handleChange}
+            disabled={locked}
           />
         </div>
 
@@ -191,6 +202,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.deematAccountName}
             onChange={handleChange}
+            disabled={locked}
           >
             <option value="">Select</option>
             <option value="Zerodha">Zerodha</option>
@@ -206,6 +218,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.profession}
             onChange={handleChange}
+            disabled={locked}
           >
             <option value="">Select</option>
             <option value="Student">Student</option>
@@ -221,6 +234,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.stateName}
             onChange={handleChange}
+            disabled={locked}
           >
             <option value="">Select</option>
             <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -262,6 +276,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.capital}
             onChange={handleChange}
+            disabled={locked}
           />
         </div>
 
@@ -273,6 +288,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.segment}
             onChange={handleChange}
+            disabled={locked}
           />
         </div>
 
@@ -284,6 +300,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.notes}
             onChange={handleChange}
             rows={3}
+            disabled={locked}
           />
         </div>
 
@@ -312,7 +329,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
           >
             Cancel
           </button>
-          <button type="submit" className="btn btn-primary">
+          <button type="submit" className="btn btn-primary" disabled={locked && !!lead}>
             {lead ? 'Update Lead' : 'Add Lead'}
           </button>
         </div>
