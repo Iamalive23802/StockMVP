@@ -143,6 +143,7 @@ const addLead = async (req, res) => {
 
 const updateLead = async (req, res) => {
   const { id } = req.params;
+  const { role } = req.query;
   const {
     fullName,
     email,
@@ -177,6 +178,14 @@ const updateLead = async (req, res) => {
   const safeAge = age && age !== '' ? age : null;
 
   try {
+    if (role === 'relationship_mgr') {
+      const result = await pool.query(
+        `UPDATE leads SET notes = $1, status = $2 WHERE id = $3 RETURNING *`,
+        [notes || '', status, id]
+      );
+      return res.json(result.rows[0]);
+    }
+
     const result = await pool.query(
       `UPDATE leads
        SET full_name = $1,
