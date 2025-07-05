@@ -76,7 +76,13 @@ const ClientsPage = () => {
                   <tr key={lead.id} className="hover:bg-gray-700">
                     <td className="p-3 font-medium text-blue-300">{lead.fullName}</td>
                     <td className="p-3">{lead.email}</td>
-                    <td className="p-3">{lead.phone || '—'}</td>
+                    <td className="p-3">
+                      {role === 'relationship_mgr'
+                        ? lead.phone
+                          ? `${lead.phone.slice(0, 2)}******`
+                          : '—'
+                        : lead.phone || '—'}
+                    </td>
                     <td className="p-3">{payments}</td>
                     <td className="p-3 flex gap-2">
                       <button
@@ -106,7 +112,14 @@ const ClientsPage = () => {
           <div className="space-y-2 text-gray-200">
             <p><strong>Full Name:</strong> {infoLead.fullName}</p>
             <p><strong>Email:</strong> {infoLead.email}</p>
-            <p><strong>Phone:</strong> {infoLead.phone || '—'}</p>
+            <p>
+              <strong>Phone:</strong>{' '}
+              {role === 'relationship_mgr'
+                ? infoLead.phone
+                  ? `${infoLead.phone.slice(0, 2)}******`
+                  : '—'
+                : infoLead.phone || '—'}
+            </p>
             <p><strong>Notes:</strong> {infoLead.notes || '—'}</p>
             <p><strong>Won On:</strong> {getWonDate(infoLead) ? new Date(getWonDate(infoLead)).toLocaleDateString() : '—'}</p>
             <p><strong>Gender:</strong> {infoLead.gender || '—'}</p>
