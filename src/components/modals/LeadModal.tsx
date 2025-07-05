@@ -21,8 +21,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
   const { role, userId } = useAuthStore();
   const addToast = useToastStore((state) => state.addToast);
 
-  const isRMEdit = role === 'relationship_mgr' && !!lead;
-
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [formData, setFormData] = useState<Omit<Lead, 'id'>>({
@@ -183,7 +181,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.altNumber}
             onChange={handleChange}
-            disabled={isRMEdit}
           />
         </div>
 
@@ -194,7 +191,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.deematAccountName}
             onChange={handleChange}
-            disabled={isRMEdit}
           >
             <option value="">Select</option>
             <option value="Zerodha">Zerodha</option>
@@ -210,7 +206,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.profession}
             onChange={handleChange}
-            disabled={isRMEdit}
           >
             <option value="">Select</option>
             <option value="Student">Student</option>
@@ -226,7 +221,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.stateName}
             onChange={handleChange}
-            disabled={isRMEdit}
           >
             <option value="">Select</option>
             <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -268,7 +262,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.capital}
             onChange={handleChange}
-            disabled={isRMEdit}
           />
         </div>
 
@@ -280,7 +273,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.segment}
             onChange={handleChange}
-            disabled={isRMEdit}
           />
         </div>
 
@@ -292,7 +284,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.notes}
             onChange={handleChange}
             rows={3}
-            disabled={isRMEdit}
           />
         </div>
 
