@@ -116,8 +116,8 @@ const addLead = async (req, res) => {
     const safeAssignedTo = assignedTo && assignedTo.trim() !== '' ? assignedTo : null;
 
     const result = await pool.query(
-      `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id, assigned_to, rm_editable)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id, assigned_to)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         fullName,
@@ -131,8 +131,7 @@ const addLead = async (req, res) => {
         capital || '',
         segment || '',
         safeTeamId,
-        safeAssignedTo,
-        true
+        safeAssignedTo
       ]
     );
     res.status(201).json(result.rows[0]);
@@ -144,16 +143,6 @@ const addLead = async (req, res) => {
 
 const updateLead = async (req, res) => {
   const { id } = req.params;
-  const { role } = req.query;
-
-  let rmEditable = true;
-  if (role === 'relationship_mgr') {
-    const check = await pool.query('SELECT rm_editable FROM leads WHERE id = $1', [id]);
-    rmEditable = check.rows[0]?.rm_editable;
-    if (!rmEditable) {
-      return res.status(403).json({ error: 'Lead can no longer be edited' });
-    }
-  }
   const {
     fullName,
     email,
@@ -208,8 +197,7 @@ const updateLead = async (req, res) => {
            payment_history = $16,
            status = $17,
            team_id = $18,
-           assigned_to = $19,
-           rm_editable = CASE WHEN $21::boolean IS NOT NULL THEN $21 ELSE rm_editable END
+           assigned_to = $19
        WHERE id = $20 RETURNING *`,
       [
         fullName,
@@ -231,8 +219,7 @@ const updateLead = async (req, res) => {
         status,
         safeTeamId,
         safeAssignedTo,
-        id,
-        role === 'relationship_mgr' ? false : null
+        id
       ]
     );
     res.json(result.rows[0]);
@@ -329,8 +316,8 @@ const uploadLeads = [
         if (sheetPhones.has(phone)) continue;
 
         await client.query(
-          `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id, rm_editable)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+          `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
           [
             fullName,
             email,
@@ -342,8 +329,7 @@ const uploadLeads = [
             stateName,
             capital,
             segment,
-            safeTeamId,
-            true
+            safeTeamId
           ]
         );
 
@@ -415,8 +401,8 @@ const googleSheetsUpload = async (req, res) => {
         if (sheetPhones.has(phone)) continue;
 
         await client.query(
-          `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id, rm_editable)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+          `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
           [
             fullName,
             email,
@@ -428,8 +414,7 @@ const googleSheetsUpload = async (req, res) => {
             stateName,
             capital,
             segment,
-            safeTeamId,
-            true
+            safeTeamId
           ]
         );
 
