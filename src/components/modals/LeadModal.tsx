@@ -23,7 +23,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [noteHistory, setNoteHistory] = useState<
-    { note: string; status: Lead['status']; date: string }[]
+    { note: string; status: Lead['status']; date: string; isNew?: boolean }[]
   >([]);
 
   const [formData, setFormData] = useState<Omit<Lead, 'id'>>({
@@ -70,6 +70,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             note: parts[0] || '',
             status: (parts[1] || 'New') as Lead['status'],
             date: parts[2] || new Date().toISOString(),
+            isNew: false,
           };
         }) || [];
       setNoteHistory(history.reverse());
@@ -93,6 +94,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
           note: '',
           status: 'New',
           date: new Date().toISOString(),
+          isNew: true,
         },
       ]);
     }
@@ -110,6 +112,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
     field: 'note' | 'status',
     value: string
   ) => {
+    if (role === 'relationship_mgr' && !noteHistory[index].isNew) return;
     const updated = [...noteHistory];
     updated[index][field] = value as any;
     setNoteHistory(updated);
@@ -122,6 +125,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
         status: 'New',
         note: '',
         date: now,
+        isNew: true,
       },
       ...noteHistory,
     ]);
@@ -364,6 +368,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
                       className="form-input"
                       value={entry.status}
                       onChange={(e) => handleNoteChange(i, 'status', e.target.value)}
+                      disabled={role === 'relationship_mgr' && !entry.isNew}
                     >
                       <option value="New">New</option>
                       <option value="Contacted">Contacted</option>
@@ -380,6 +385,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
                       placeholder="Enter note"
                       value={entry.note}
                       onChange={(e) => handleNoteChange(i, 'note', e.target.value)}
+                      disabled={role === 'relationship_mgr' && !entry.isNew}
                     />
                   </td>
                 </tr>
