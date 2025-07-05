@@ -19,7 +19,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
   const { fetchTeams } = useTeamStore();
   const { users, fetchUsers } = useUserStore();
   const { role, userId } = useAuthStore();
-  const isLocked = role === 'relationship_mgr' && !!lead;
   const addToast = useToastStore((state) => state.addToast);
 
   const [showConfirm, setShowConfirm] = useState(false);
@@ -148,7 +147,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.fullName}
             onChange={handleChange}
             required
-            disabled={isLocked}
           />
         </div>
 
@@ -160,7 +158,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.phone}
             onChange={handleChange}
-            disabled={isLocked}
           />
         </div>
 
@@ -173,7 +170,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.email}
             onChange={handleChange}
             required
-            disabled={isLocked}
           />
         </div>
 
@@ -185,7 +181,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.altNumber}
             onChange={handleChange}
-            disabled={isLocked}
           />
         </div>
 
@@ -196,7 +191,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.deematAccountName}
             onChange={handleChange}
-            disabled={isLocked}
           >
             <option value="">Select</option>
             <option value="Zerodha">Zerodha</option>
@@ -212,7 +206,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.profession}
             onChange={handleChange}
-            disabled={isLocked}
           >
             <option value="">Select</option>
             <option value="Student">Student</option>
@@ -228,7 +221,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.stateName}
             onChange={handleChange}
-            disabled={isLocked}
           >
             <option value="">Select</option>
             <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -270,7 +262,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.capital}
             onChange={handleChange}
-            disabled={isLocked}
           />
         </div>
 
@@ -282,7 +273,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.segment}
             onChange={handleChange}
-            disabled={isLocked}
           />
         </div>
 
@@ -294,7 +284,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             value={formData.notes}
             onChange={handleChange}
             rows={3}
-            disabled={isLocked}
           />
         </div>
 
@@ -305,7 +294,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
             className="form-input"
             value={formData.status}
             onChange={handleChange}
-            disabled={isLocked}
           >
             <option value="New">New</option>
             <option value="Contacted">Contacted</option>
@@ -324,7 +312,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, lead }) => {
           >
             Cancel
           </button>
-          <button type="submit" className="btn btn-primary" disabled={isLocked && !!lead}>
+          <button type="submit" className="btn btn-primary">
             {lead ? 'Update Lead' : 'Add Lead'}
           </button>
         </div>
