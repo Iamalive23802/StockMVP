@@ -116,8 +116,8 @@ const addLead = async (req, res) => {
     const safeAssignedTo = assignedTo && assignedTo.trim() !== '' ? assignedTo : null;
 
     const result = await pool.query(
-      `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id, assigned_to, rm_locked, client_locked)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      `INSERT INTO leads (full_name, email, phone, alt_number, notes, deemat_account_name, profession, state_name, capital, segment, team_id, assigned_to)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         fullName,
@@ -131,9 +131,7 @@ const addLead = async (req, res) => {
         capital || '',
         segment || '',
         safeTeamId,
-        safeAssignedTo,
-        false,
-        false
+        safeAssignedTo
       ]
     );
     res.status(201).json(result.rows[0]);
@@ -145,7 +143,6 @@ const addLead = async (req, res) => {
 
 const updateLead = async (req, res) => {
   const { id } = req.params;
-  const { role, context } = req.query;
   const {
     fullName,
     email,
@@ -179,27 +176,7 @@ const updateLead = async (req, res) => {
   const safeDob = dob && dob.trim() !== '' ? dob : null;
   const safeAge = age && age !== '' ? age : null;
 
-  let rmLocked = false;
-  let clientLocked = false;
   try {
-    const lockRes = await pool.query('SELECT rm_locked, client_locked FROM leads WHERE id = $1', [id]);
-    rmLocked = lockRes.rows[0]?.rm_locked || false;
-    clientLocked = lockRes.rows[0]?.client_locked || false;
-
-    if (role === 'relationship_mgr') {
-      if (context === 'lead_edit') {
-        if (rmLocked) {
-          return res.status(403).json({ error: 'Lead details locked' });
-        }
-        rmLocked = true;
-      } else if (context === 'client_details') {
-        if (clientLocked) {
-          return res.status(403).json({ error: 'Client details locked' });
-        }
-        clientLocked = true;
-      }
-    }
-
     const result = await pool.query(
       `UPDATE leads
        SET full_name = $1,
@@ -220,10 +197,8 @@ const updateLead = async (req, res) => {
            payment_history = $16,
            status = $17,
            team_id = $18,
-           assigned_to = $19,
-           rm_locked = $20,
-           client_locked = $21
-       WHERE id = $22 RETURNING *`,
+           assigned_to = $19
+       WHERE id = $20 RETURNING *`,
       [
         fullName,
         email,
@@ -244,8 +219,6 @@ const updateLead = async (req, res) => {
         status,
         safeTeamId,
         safeAssignedTo,
-        rmLocked,
-        clientLocked,
         id
       ]
     );

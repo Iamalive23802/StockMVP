@@ -22,8 +22,6 @@ export interface Lead {
   panCardNumber?: string;
   aadharCardNumber?: string;
   paymentHistory?: string;
-  rmLocked?: boolean;
-  clientLocked?: boolean;
   status: 'New' | 'Contacted' | 'Qualified' | 'Proposal' | 'Won' | 'Lost';
   team_id: string;
   assigned_to?: string;
@@ -34,7 +32,7 @@ interface LeadStore {
   loading: boolean;
   fetchLeads: () => Promise<void>;
   addLead: (lead: Omit<Lead, 'id'>) => Promise<void>;
-  updateLead: (id: string, lead: Omit<Lead, 'id'>, context?: string) => Promise<void>;
+  updateLead: (id: string, lead: Omit<Lead, 'id'>) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
   uploadLeads: (file: File) => Promise<void>;
 }
@@ -65,9 +63,7 @@ export const useLeadStore = create<LeadStore>((set) => ({
         age: lead.age,
         panCardNumber: lead.pan_card_number,
         aadharCardNumber: lead.aadhar_card_number,
-        paymentHistory: lead.payment_history,
-        rmLocked: lead.rm_locked,
-        clientLocked: lead.client_locked
+        paymentHistory: lead.payment_history
       }));
       set({ leads: mapped });
     } catch (err) {
@@ -89,13 +85,10 @@ export const useLeadStore = create<LeadStore>((set) => ({
     }
   },
 
-  updateLead: async (id, lead, context) => {
+  updateLead: async (id, lead) => {
     const addToast = useToastStore.getState().addToast;
     try {
-      const { role, userId } = useAuthStore.getState();
-      await axios.put(`/api/leads/${id}`, lead, {
-        params: { role, user_id: userId, context }
-      });
+      await axios.put(`/api/leads/${id}`, lead);
       await useLeadStore.getState().fetchLeads();
       addToast('Lead updated successfully', 'success');
     } catch (err) {
